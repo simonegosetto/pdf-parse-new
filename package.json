@@ -1,6 +1,6 @@
 {
     "name": "pdf-parse-new",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "Pure javascript cross-platform module to extract text from PDFs.",
     "main": "index.js",
     "keywords": [
@@ -31,10 +31,10 @@
     "scripts": {
         "test": "node node_modules/mocha/bin/_mocha --recursive --slow 10000",
         "start": "node index.js",
-		"up:patch": "npm version patch",
-		"up:minor": "npm version minor",
-		"up:major": "npm version major"
-	},
+        "up:patch": "npm version patch",
+        "up:minor": "npm version minor",
+        "up:major": "npm version major"
+    },
     "homepage": "https://github.com/simonegosetto/pdf-parse",
     "bugs": {
         "url": "https://github.com/simonegosetto/pdf-parse/issues",
