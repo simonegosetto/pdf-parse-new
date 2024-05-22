@@ -1,5 +1,5 @@
 {
-    "name": "pdf-parse",
+    "name": "pdf-parse-new",
     "version": "1.1.1",
     "description": "Pure javascript cross-platform module to extract text from PDFs.",
     "main": "index.js",
@@ -22,24 +22,24 @@
         "pdf metadata"
     ],
     "dependencies": {
-        "debug": "^3.1.0",
+        "debug": "^4.3.4",
         "node-ensure": "^0.0.0"
     },
     "devDependencies": {
-        "mocha": "^4.0.1"
+        "mocha": "^10.4.0"
     },
     "scripts": {
         "test": "node node_modules/mocha/bin/_mocha --recursive --slow 10000",
         "start": "node index.js"
     },
-    "homepage": "https://gitlab.com/autokent/pdf-parse",
+    "homepage": "https://github.com/simonegosetto/pdf-parse",
     "bugs": {
-        "url": "https://gitlab.com/autokent/pdf-parse/issues",
-        "email": "mehmet.kozan@live.com"
+        "url": "https://github.com/simonegosetto/pdf-parse/issues",
+        "email": "simone.gosetto@gmail.com"
     },
     "repository": {
         "type": "git",
-        "url": "https://gitlab.com/autokent/pdf-parse.git"
+        "url": "https://github.com/simonegosetto/pdf-parse.git"
     },
     "author": "Mehmet Kozan <mehmet.kozan@live.com>",
     "license": "MIT",
