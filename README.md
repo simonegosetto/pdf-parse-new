@@ -17,13 +17,13 @@
 * [pdf-extract](https://www.npmjs.com/package/pdf-extract) not cross-platform using xpdf
 
 ## Installation
-`npm install pdf-parse`
+`npm install pdf-parse-new`
 
 ## Basic Usage - Local Files
 
 ```js
 const fs = require('fs');
-const pdf = require('pdf-parse');
+const pdf = require('pdf-parse-new');
 
 let dataBuffer = fs.readFileSync('path to PDF file...');
 
@@ -53,7 +53,7 @@ You can use [crawler-request](https://www.npmjs.com/package/crawler-request) whi
 
 ```js
 const fs = require('fs');
-const pdf = require('pdf-parse');
+const pdf = require('pdf-parse-new');
 
 let dataBuffer = fs.readFileSync('path to PDF file...');
 
