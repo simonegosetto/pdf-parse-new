@@ -1,4 +1,4 @@
-# pdf-parse
+# pdf-parse-new
 
 **Pure javascript cross-platform module to extract texts from PDFs.**
 
