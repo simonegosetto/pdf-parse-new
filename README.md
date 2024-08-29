@@ -66,7 +66,7 @@ pdf(dataBuffer).then(function(data) {
 ```
 
 ## Extend
-* v1.0.9 and above break pagerender callback [changelog](https://gitlab.com/autokent/pdf-parse/blob/master/CHANGELOG)
+* v1.0.9 and above break pagerender callback [changelog](https://github.com/simonegosetto/pdf-parse-new/blob/master/CHANGELOG)
 * If you need another format like json, you can change page render behaviour with a callback
 * Check out https://mozilla.github.io/pdf.js/
 
@@ -134,8 +134,8 @@ check [pdf.js](https://mozilla.github.io/pdf.js/getting_started/)
 
 * `'default'`
 * `'v1.9.426'`
-* `'v1.10.100'`
 * `'v1.10.88'`
+* `'v1.10.100'`
 * `'v2.0.550'`
 
 >*default* version is *v1.10.100*
@@ -143,15 +143,10 @@ check [pdf.js](https://mozilla.github.io/pdf.js/getting_started/)
 
 ## Test
 * `mocha` or `npm test`
-* Check [test folder](https://gitlab.com/autokent/pdf-parse/tree/master/test) and [quickstart.js](https://gitlab.com/autokent/pdf-parse/blob/master/quickstart.js) for extra usages.
-
-## Support
-I use this package actively myself, so it has my top priority. You can chat on WhatsApp about any infos, ideas and suggestions.
-
-[![WhatsApp](https://img.shields.io/badge/style-chat-green.svg?style=flat&label=whatsapp)](https://api.whatsapp.com/send?phone=905063042480&text=Hi%2C%0ALet%27s%20talk%20about%20pdf-parse)
+* Check [test folder](https://github.com/simonegosetto/pdf-parse-new/tree/master/test) and [quickstart.js](https://github.com/simonegosetto/pdf-parse-new/blob/master/QUICKSTART.js) for extra usages.
 
 ### Submitting an Issue
-If you find a bug or a mistake, you can help by submitting an issue to [GitLab Repository](https://gitlab.com/autokent/pdf-parse/issues)
+If you find a bug or a mistake, you can help by submitting an issue [Here](https://github.com/simonegosetto/pdf-parse-new/issues)
 
 ### Creating a Merge Request
 GitLab calls it merge request instead of pull request.
@@ -161,4 +156,4 @@ GitLab calls it merge request instead of pull request.
 * Check [Contributing Guide](https://gitlab.com/autokent/pdf-parse/blob/master/CONTRIBUTING.md)
 
 ## License
-[MIT licensed](https://gitlab.com/autokent/pdf-parse/blob/master/LICENSE) and all it's dependencies are MIT or BSD licensed.
+[MIT licensed](https://github.com/simonegosetto/pdf-parse-new/blob/master/LICENSE) and all it's dependencies are MIT or BSD licensed.
