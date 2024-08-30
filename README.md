@@ -73,12 +73,14 @@ pdf(dataBuffer).then(function(data) {
 ```js
 // default render callback
 function render_page(pageData) {
-    //check documents https://mozilla.github.io/pdf.js/
+    // check documents https://mozilla.github.io/pdf.js/
     let render_options = {
-        //replaces all occurrences of whitespace with standard spaces (0x20). The default value is `false`.
+        // replaces all occurrences of whitespace with standard spaces (0x20). The default value is `false`.
         normalizeWhitespace: false,
-        //do not attempt to combine same line TextItem's. The default value is `false`.
-        disableCombineTextItems: false
+        // do not attempt to combine same line TextItem's. The default value is `false`.
+        disableCombineTextItems: false,
+		// pdf.js verbosity Level
+		verbosityLevel: 0, // errors: 0, warnings: 1, infos: 5
     }
 
     return pageData.getTextContent(render_options)
