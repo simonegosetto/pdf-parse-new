@@ -2,13 +2,12 @@ export = PdfParse;
 
 declare function PdfParse(dataBuffer: Buffer, options?: PdfParse.Options): Promise<PdfParse.Result>;
 
-export enum VerbosityLevel {
-	ERRORS = 0,
-	WARNINGS = 1,
-	INFO = 5,
-}
-
 declare namespace PdfParse {
+	enum VerbosityLevel {
+		ERRORS = 0,
+		WARNINGS = 1,
+		INFO = 5,
+	}
 	type Version = "default" | "v1.9.426" | "v1.10.100" | "v1.10.88" | "v2.0.550";
 	interface Result {
 		numpages: number;
