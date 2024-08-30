@@ -1,6 +1,6 @@
 {
     "name": "pdf-parse-new",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "Pure javascript cross-platform module to extract text from PDFs.",
     "main": "index.js",
     "types": "index.d.ts",
