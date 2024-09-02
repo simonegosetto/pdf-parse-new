@@ -45,9 +45,9 @@
         "type": "git",
         "url": "https://github.com/simonegosetto/pdf-parse.git"
     },
-    "author": "Mehmet Kozan <mehmet.kozan@live.com>",
+    "author": "Simone Gosetto <simone.gosetto@gmail.com>",
     "license": "MIT",
     "engines": {
-        "node": ">=6.8.1"
+        "node": ">=20.11.0"
     }
 }

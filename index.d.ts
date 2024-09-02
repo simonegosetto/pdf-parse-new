@@ -15,7 +15,7 @@ declare namespace PdfParse {
 	interface Options {
 		pagerender?: ((pageData: any) => string) | undefined;
 		max?: number | undefined;
-		version?: Version | undefined;
+		// version?: Version | undefined;
 		verbosityLevel?: 0 | 1 | 5 | undefined;
 	}
 }
