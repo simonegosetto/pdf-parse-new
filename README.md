@@ -122,7 +122,7 @@ const DEFAULT_OPTIONS = {
 	max: 0,
 
 	//check https://mozilla.github.io/pdf.js/getting_started/
-	version: 'v1.10.100'
+	version: 'v4.5.136'
 }
 ```
 ### *pagerender* (callback)
@@ -135,12 +135,11 @@ Max number of page to parse. If the value is less than or equal to 0, parser ren
 check [pdf.js](https://mozilla.github.io/pdf.js/getting_started/)
 
 * `'default'`
-* `'v1.9.426'`
-* `'v1.10.88'`
 * `'v1.10.100'`
 * `'v2.0.550'`
+* `'v4.5.136'`
 
->*default* version is *v1.10.100*
+>*default* version is *v4.5.136*
 >[mozilla.github.io/pdf.js](https://mozilla.github.io/pdf.js/getting_started/#download)
 
 ## Test

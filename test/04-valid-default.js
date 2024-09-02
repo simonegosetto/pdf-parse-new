@@ -6,8 +6,8 @@ const fs = require('fs');
 const PDF_FILE = './test/data/04-valid.pdf';
 const VERSION = 'default';
 const PDF_PAGE_COUNT = 5;
-const FIST_PAGE_TEXT = 'Exercise  is  one  of  the  low-cost  and  easiest  ways  for  improving  life  standards';
-const LAST_PAGE_TEXT = 'accounts  for  the  biological  activity  of  endothelium-derived';
+const FIST_PAGE_TEXT = 'Exercise is one of the low-cost and easiest ways for improving life standards';
+const LAST_PAGE_TEXT = 'accounts for the biological activity of endothelium-derived';
 
 //TODO: add extra test cases.
 describe(`File:${PDF_FILE} PDF.js Version:${VERSION}`, function() {
@@ -19,6 +19,7 @@ describe(`File:${PDF_FILE} PDF.js Version:${VERSION}`, function() {
         };
 
         return PDF(dataBuffer, options).then(function(data) {
+			console.log(data)
             fs.writeFileSync(`${PDF_FILE}.txt`, data.text, {
                 encoding: 'utf8',
                 flag: 'w'
@@ -130,10 +131,10 @@ describe(`File:${PDF_FILE} PDF.js Version:${VERSION}`, function() {
                     for (let item of textContent.items) {
                         if (lastY == item.transform[5] || !lastY){
                             text += item.str;
-                        }  
+                        }
                         else{
                             text += '\n' + item.str;
-                        }    
+                        }
                         lastY = item.transform[5];
                     }
                     return text;
