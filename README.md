@@ -79,8 +79,6 @@ function render_page(pageData) {
         normalizeWhitespace: false,
         // do not attempt to combine same line TextItem's. The default value is `false`.
         disableCombineTextItems: false,
-		// pdf.js verbosity Level
-		verbosityLevel: 0, // errors: 0, warnings: 1, infos: 5
     }
 
     return pageData.getTextContent(render_options)
@@ -120,9 +118,8 @@ const DEFAULT_OPTIONS = {
 
 	// max page number to parse
 	max: 0,
-
-	//check https://mozilla.github.io/pdf.js/getting_started/
-	version: 'v4.5.136'
+	// pdf.js verbosity Level
+	verbosityLevel: 0, // errors: 0, warnings: 1, infos: 5
 }
 ```
 ### *pagerender* (callback)
@@ -135,8 +132,6 @@ Max number of page to parse. If the value is less than or equal to 0, parser ren
 check [pdf.js](https://mozilla.github.io/pdf.js/getting_started/)
 
 * `'default'`
-* `'v1.10.100'`
-* `'v2.0.550'`
 * `'v4.5.136'`
 
 >*default* version is *v4.5.136*
