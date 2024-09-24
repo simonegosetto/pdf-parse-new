@@ -114,7 +114,6 @@ const DEFAULT_OPTIONS = {
 	// internal page parser callback
 	// you can set this option, if you need another format except raw text
 	pagerender: render_page,
-
 	// max page number to parse
 	max: 0,
 	// pdf.js verbosity Level
@@ -127,13 +126,8 @@ If you need another format except raw text.
 ### *max* (number)
 Max number of page to parse. If the value is less than or equal to 0, parser renders all pages.
 
-### *version* (string, pdf.js version)
-check [pdf.js](https://mozilla.github.io/pdf.js/getting_started/)
 
-* `'default'`
-* `'v4.5.136'`
-
->*default* version is *v4.5.136*
+>*pdf.js* version is *v4.5.136*
 >[mozilla.github.io/pdf.js](https://mozilla.github.io/pdf.js/getting_started/#download)
 
 ## Test
