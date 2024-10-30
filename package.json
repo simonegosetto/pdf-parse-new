@@ -39,7 +39,10 @@
         "start": "node index.js",
         "up:patch": "npm version patch",
         "up:minor": "npm version minor",
-        "up:major": "npm version major"
+        "up:major": "npm version major",
+		"up:patch:beta": "npm version patch --tag beta",
+		"up:minor:beta": "npm version minor --tag beta",
+		"up:major:beta": "npm version major --tag beta"
     },
     "homepage": "https://github.com/simonegosetto/pdf-parse",
     "bugs": {
