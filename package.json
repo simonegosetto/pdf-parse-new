@@ -1,6 +1,6 @@
 {
     "name": "pdf-parse-new",
-    "version": "1.3.9",
+    "version": "1.3.9-beta.0",
     "description": "Pure javascript cross-platform module to extract text from PDFs.",
     "main": "lib\\pdf-parse.js",
     "types": "index.d.ts",
@@ -39,10 +39,7 @@
         "start": "node index.js",
         "up:patch": "npm version patch",
         "up:minor": "npm version minor",
-        "up:major": "npm version major",
-        "up:patch:beta": "npm version patch --tag beta",
-        "up:minor:beta": "npm version minor --tag beta",
-        "up:major:beta": "npm version major --tag beta"
+        "up:major": "npm version major"
     },
     "homepage": "https://github.com/simonegosetto/pdf-parse",
     "bugs": {
