@@ -1,5 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const {IgnorePlugin} = require('webpack');
 
 module.exports = {
 	mode: 'production',
@@ -27,6 +28,9 @@ module.exports = {
 			'pdf.worker.js': path.resolve(process.cwd(), `lib\\pdf.js\\v4.5.136\\build\\pdf.worker.js`)
 		}
 	},
+/*	plugins: [
+		new IgnorePlugin({resourceRegExp: /^(canvas|path2d)$/u})
+	],*/
 	/*plugins: [
 		new CopyWebpackPlugin({
 			patterns: [
