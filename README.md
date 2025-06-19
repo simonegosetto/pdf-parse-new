@@ -2,7 +2,7 @@
 
 **Pure javascript cross-platform module to extract texts from PDFs.**
 
-## 2024 refresh library of [pdf-parse](https://gitlab.com/autokent/pdf-parse)
+## 2025 refresh library of [pdf-parse](https://gitlab.com/autokent/pdf-parse)
 
 [![version](https://img.shields.io/npm/v/pdf-parse.svg)](https://www.npmjs.org/package/pdf-parse-new)
 [![downloads](https://img.shields.io/npm/dt/pdf-parse.svg)](https://www.npmjs.org/package/pdf-parse-new)
