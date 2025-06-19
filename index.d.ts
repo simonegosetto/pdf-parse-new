@@ -15,4 +15,5 @@ declare namespace PdfParse {
 		max?: number | undefined;
 		verbosityLevel?: 0 | 1 | 5 | undefined;
 	}
+	const DEFAULT_OPTIONS: Options;
 }
