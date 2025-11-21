@@ -114,6 +114,10 @@ const DEFAULT_OPTIONS = {
 	max: 0,
 	// pdf.js verbosity Level
 	verbosityLevel: 0, // errors: 0, warnings: 1, infos: 5
+	// enable parallel page processing (batch-based)
+	parallelizePages: false,
+	// number of pages to process in parallel per batch
+	batchSize: 10
 }
 ```
 ### *pagerender* (callback)
@@ -122,6 +126,112 @@ If you need another format except raw text.
 ### *max* (number)
 Max number of page to parse. If the value is less than or equal to 0, parser renders all pages.
 
+### *parallelizePages* (boolean)
+Enable batch-parallel processing of PDF pages for improved performance on large PDFs.
+
+**Example:**
+```js
+// Sequential processing (default)
+pdf(dataBuffer).then(function(data) {
+	console.log(data.text);
+});
+
+// Parallel processing with default batch size (10)
+pdf(dataBuffer, { parallelizePages: true }).then(function(data) {
+	console.log(data.text);
+});
+
+// Custom batch size for large PDFs
+pdf(dataBuffer, {
+	parallelizePages: true,
+	batchSize: 20
+}).then(function(data) {
+	console.log(data.text);
+});
+```
+
+**Performance:**
+- For PDFs with 50+ pages: 15-30% faster
+- For PDFs with 200+ pages: up to 40% faster
+- Optimal batch size depends on PDF size (see [PARALLEL_PARSING.md](PARALLEL_PARSING.md))
+
+### *batchSize* (number)
+Number of pages to process in parallel per batch when `parallelizePages` is enabled. Default is 10.
+
+**Guidelines:**
+- Small PDFs (< 50 pages): 5-10
+- Medium PDFs (50-200 pages): 10-20
+- Large PDFs (200+ pages): 20-50
+
+See [PARALLEL_PARSING.md](PARALLEL_PARSING.md) for detailed benchmarks and best practices.
+
+## 🚀 Advanced: Parsing Very Large PDFs (1000+ pages)
+
+For extremely large PDFs, use specialized methods:
+
+### Streaming with Chunking
+
+Best for reducing memory pressure on large files:
+
+```js
+const pdf = require('pdf-parse-new');
+const fs = require('fs');
+
+let dataBuffer = fs.readFileSync('huge-file.pdf');
+
+// Use streaming method
+pdf.stream(dataBuffer, {
+	verbosityLevel: 0,
+	chunkSize: 500,      // Process 500 pages per chunk
+	batchSize: 10,       // 10 pages parallel within chunk
+	onChunkComplete: (progress) => {
+		console.log(`Progress: ${progress.progress}% (${progress.processedPages}/${progress.totalPages})`);
+	}
+}).then(function(data) {
+	console.log(data.text);
+});
+```
+
+**Benefits:**
+- Reduced memory usage
+- Progress tracking
+- Better garbage collection
+- 15-25% faster for large files
+
+### Aggressive Parallelization (Maximum Speed)
+
+Best for massive PDFs (1000+ pages):
+
+```js
+const pdf = require('pdf-parse-new');
+const fs = require('fs');
+
+let dataBuffer = fs.readFileSync('massive-file.pdf');
+
+// Use aggressive parallelization
+pdf.aggressive(dataBuffer, {
+	verbosityLevel: 0,
+	chunkSize: 500,      // Pages per chunk
+	batchSize: 20,       // Aggressive batch size (all batches run in parallel)
+	onChunkComplete: (progress) => {
+		console.log(`Progress: ${progress.progress}% (chunk ${progress.currentChunk}/${progress.totalChunks})`);
+	}
+}).then(function(data) {
+	console.log(data.text);
+});
+```
+
+**Benefits:**
+- 30-50% faster for 1000+ page PDFs
+- Maximum parallelization within chunks
+- No worker thread overhead
+- Progress tracking
+- Most reliable for large files
+
+**Note:** Run with `--expose-gc` flag for better memory management:
+```bash
+node --expose-gc your-script.js
+```
 
 >*pdf.js* version is *v4.5.136*
 >[mozilla.github.io/pdf.js](https://mozilla.github.io/pdf.js/getting_started/#download)

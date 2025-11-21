@@ -1,0 +1,62 @@
+{
+  "exportDate": "2025-11-21T17:35:06.440Z",
+  "systemInfo": {
+    "cpus": 16,
+    "totalMemory": 51408662528,
+    "platform": "win32"
+  },
+  "benchmarks": [
+    {
+      "timestamp": 1763746506439,
+      "pages": 373,
+      "size": 10258121,
+      "complexity": "medium",
+      "method": "batch",
+      "config": {
+        "parallelizePages": true,
+        "batchSize": 20
+      },
+      "duration": 2118.75,
+      "success": true,
+      "cpuCores": 16,
+      "availableMemory": 20346445824
+    }
+  ],
+  "stats": {
+    "totalParses": 1,
+    "methodUsage": {
+      "sequential": 0,
+      "batch": 1,
+      "stream": 0,
+      "aggressive": 0,
+      "processes": 0
+    },
+    "averageTimes": {
+      "batch": 2118.75
+    },
+    "failedParses": 0,
+    "benchmarksCollected": 1
+  },
+  "analysis": {
+    "Small (0-50)": {
+      "message": "No data"
+    },
+    "Medium (50-500)": {
+      "samples": 1,
+      "methods": {
+        "batch": {
+          "average": 2118.75,
+          "count": 1
+        }
+      },
+      "recommended": null,
+      "averageTime": null
+    },
+    "Large (500-1000)": {
+      "message": "No data"
+    },
+    "Huge (1000+)": {
+      "message": "No data"
+    }
+  }
+}
