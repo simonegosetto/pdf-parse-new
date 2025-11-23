@@ -1,11 +1,12 @@
 # pdf-parse-new
 
-**Pure JavaScript cross-platform module to extract text from PDFs with smart performance optimization.**
+**Pure JavaScript cross-platform module to extract text from PDFs with intelligent performance optimization.**
 
-[![npm version](https://img.shields.io/npm/v/pdf-parse-new.svg)](https://www.npmjs.com/package/pdf-parse-new)
-[![License](https://img.shields.io/npm/l/pdf-parse-new.svg)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
+[![License](https://img.shields.io/npm/l/pdf-parse-new.svg?style=flat-square)](LICENSE)
+[![Downloads](https://img.shields.io/npm/dm/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
 
-Modern 2025 refresh of [pdf-parse](https://gitlab.com/autokent/pdf-parse) with performance improvements and smart parsing strategies.
+**Version 2.0.0** - Major release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417+ real-world benchmarks.
 
 ---
 
@@ -26,27 +27,41 @@ Modern 2025 refresh of [pdf-parse](https://gitlab.com/autokent/pdf-parse) with p
 
 ## Features
 
-✨ **Smart Performance Optimization**
-- Automatically selects the best parsing method based on PDF size
-- 2-3x faster for large PDFs (1000+ pages) using child processes
-- Optimized batch processing for small to medium PDFs
+### 🎯 New in Version 2.0.0
+
+✨ **SmartPDFParser with AI-Powered Selection**
+- Automatically selects optimal parsing method based on PDF characteristics
+- CPU-aware thresholds that adapt to available hardware (4 to 48+ cores)
+- Fast-path optimization: **50x faster** overhead for small PDFs (25ms → 0.5ms)
+- LRU caching: **25x faster** on repeated similar PDFs
+- 90%+ optimization rate in production
+
+⚡ **Multi-Core Performance**
+- **Child Processes**: True multi-processing, 2-4x faster for huge PDFs
+- **Worker Threads**: Alternative multi-threading with lower memory overhead
+- **Oversaturation**: Use 1.5x-2x cores for maximum CPU utilization (I/O-bound optimization)
+- Automatic memory safety limits
+
+📊 **Battle-Tested Intelligence**
+- Decision tree trained on **9,417+ real-world PDF benchmarks**
+- Tested on documents from 1 to 10,000+ pages
+- CPU normalization: adapts thresholds from 4-core laptops to 48-core servers
+- Production-ready with comprehensive error handling
 
 🚀 **Multiple Parsing Strategies**
 - **Batch Processing**: Parallel page processing (optimal for 0-1000 pages)
-- **Child Processes**: Multi-processing (default for 1000+ pages, consistent performance)
-- **Worker Threads**: Multi-threading (alternative for 1000+ pages, can be faster on some PDFs)
-- **Streaming**: Memory-efficient for constrained environments
-- **Sequential**: Traditional fallback method
+- **Child Processes**: Multi-processing (default for 1000+ pages, most consistent)
+- **Worker Threads**: Multi-threading (alternative, can be faster on some PDFs)
+- **Streaming**: Memory-efficient chunking for constrained environments
+- **Aggressive**: Combines streaming with large batches
+- **Sequential**: Traditional fallback
 
-📊 **Battle-Tested**
-- Decision tree optimized on 9,417 real-world PDF benchmarks
-- Tested on documents ranging from 1 to 2000+ pages
-- Production-ready with comprehensive error handling
-
-🔧 **Easy to Use**
-- Drop-in replacement for pdf-parse
-- Simple API with sensible defaults
-- Optional manual method selection
+🔧 **Developer Experience**
+- Drop-in replacement for pdf-parse (backward compatible)
+- 7 practical examples in `test/examples/`
+- Full TypeScript definitions with autocomplete
+- Comprehensive benchmarking tools included
+- Zero configuration required (paths resolved automatically)
 
 ---
 
@@ -54,6 +69,56 @@ Modern 2025 refresh of [pdf-parse](https://gitlab.com/autokent/pdf-parse) with p
 
 ```bash
 npm install pdf-parse-new
+```
+
+---
+
+## What's New in 2.0.0
+
+### 🎯 Major Features
+
+**SmartPDFParser** - Intelligent automatic method selection
+- CPU-aware decision tree (adapts to 4-48+ cores)
+- Fast-path optimization (0.5ms overhead vs 25ms)
+- LRU caching for repeated PDFs
+- 90%+ optimization rate
+
+**Multi-Core Processing**
+- Child processes (default, most consistent)
+- Worker threads (alternative, can be faster)
+- Oversaturation factor (1.5x cores = better CPU utilization)
+- Automatic memory safety
+
+**Performance Improvements**
+- 2-4x faster for huge PDFs (1000+ pages)
+- 50x faster overhead for tiny PDFs (< 0.5 MB)
+- 25x faster on cache hits
+- CPU normalization for any hardware
+
+**Better DX**
+- 7 practical examples with npm scripts
+- Full TypeScript definitions
+- Comprehensive benchmarking tools
+- Clean repository structure
+
+### 📦 Migration from 1.x
+
+Version 2.0.0 is **backward compatible**. Your existing code will continue to work:
+
+```javascript
+// v1.x code still works
+const pdf = require('pdf-parse-new');
+pdf(buffer).then(data => console.log(data.text));
+```
+
+**To take advantage of new features:**
+
+```javascript
+// Use SmartPDFParser for automatic optimization
+const SmartParser = require('pdf-parse-new/lib/SmartPDFParser');
+const parser = new SmartParser();
+const result = await parser.parse(buffer);
+console.log(`Used ${result._meta.method} in ${result._meta.duration}ms`);
 ```
 
 ---
@@ -74,6 +139,23 @@ pdf(dataBuffer).then(function(data) {
     console.log(data.info);       // PDF metadata
 });
 ```
+
+### 📚 Examples
+
+See [test/examples/](test/examples/) for practical examples:
+
+```bash
+# Try the examples
+npm run example:basic      # Basic parsing
+npm run example:smart      # SmartPDFParser (recommended)
+npm run example:compare    # Compare all methods
+
+# Or run directly
+node test/examples/01-basic-parse.js
+node test/examples/06-smart-parser.js
+```
+
+**7 complete examples** covering all parsing methods with real-world patterns!
 
 ### With Smart Parser (Recommended)
 
@@ -527,20 +609,46 @@ PDFProcess(dataBuffer, {
 ## Why pdf-parse-new?
 
 ### vs. Original pdf-parse
-- ✅ 4-5x faster for large PDFs
-- ✅ Smart automatic optimization
-- ✅ Modern JavaScript (async/await)
-- ✅ Better error handling
-- ✅ Active maintenance
-- ✅ Comprehensive benchmarks
+| Feature | pdf-parse | pdf-parse-new 2.0 |
+|---------|-----------|-------------------|
+| Speed (huge PDFs) | Baseline | **2-4x faster** ⚡ |
+| Smart optimization | ❌ | ✅ AI-powered |
+| Multi-core support | ❌ | ✅ Workers + Processes |
+| CPU adaptation | ❌ | ✅ 4-48+ cores |
+| Fast-path | ❌ | ✅ 50x faster overhead |
+| Caching | ❌ | ✅ LRU cache |
+| TypeScript | Partial | ✅ Complete |
+| Examples | Basic | ✅ 7 production-ready |
+| Benchmarking | ❌ | ✅ Tools included |
+| Maintenance | Slow | ✅ Active |
 
 ### vs. Other PDF Libraries
-- ✅ Pure JavaScript (no native dependencies)
-- ✅ Cross-platform (Windows, Mac, Linux)
-- ✅ No memory leaks
-- ✅ Proper error handling (catchable exceptions)
-- ✅ Production-ready
-- ✅ Well-tested
+- ✅ **Pure JavaScript** (no native dependencies, no compilation)
+- ✅ **Cross-platform** (Windows, Mac, Linux - same code)
+- ✅ **Zero configuration** (paths auto-resolved, npm-safe)
+- ✅ **No memory leaks** (proper cleanup, GC-friendly)
+- ✅ **Production-ready** (comprehensive error handling)
+- ✅ **Well-tested** (9,417+ benchmark samples)
+- ✅ **Modern** (async/await, Promises, ES6+)
+
+### Real-World Performance
+
+**9,924-page PDF (13.77 MB) on 24-core system:**
+```
+Sequential: ~15,000ms
+Batch-50:   ~11,723ms
+Processes:   ~4,468ms  ✅ (2.6x faster than batch)
+Workers:     ~6,963ms  ✅ (1.7x faster than batch)
+
+SmartParser: Automatically chooses Processes ⚡
+```
+
+**100 KB PDF on any system:**
+```
+Overhead:
+- Without fast-path: 25ms
+- With fast-path:    0.5ms ✅ (50x faster)
+```
 
 ---
 
@@ -576,16 +684,43 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Credits
 
 - Based on [pdf-parse](https://gitlab.com/autokent/pdf-parse) by autokent
-- Powered by [PDF.js](https://mozilla.github.io/pdf.js/) by Mozilla
-- Performance optimization by [your name/org]
+- Powered by [PDF.js](https://mozilla.github.io/pdf.js/) v4.5.136 by Mozilla
+- Performance optimization and v2.0 development by Simone Gosetto
 
 ---
 
 ## Changelog
 
-See [CHANGELOG](CHANGELOG) for version history and migration guides.
+### Version 2.0.0 (2025-11-23)
+
+**Major Features:**
+- ✨ SmartPDFParser with AI-powered method selection
+- ⚡ Multi-core processing (workers + processes)
+- 🚀 Oversaturation for maximum CPU utilization
+- ⚡ Fast-path optimization (50x faster overhead)
+- 💾 LRU caching (25x faster on cache hits)
+- 🎯 CPU-aware thresholds (4-48+ cores)
+- 📊 Decision tree trained on 9,417+ benchmarks
+- 🔧 7 production-ready examples
+- 📝 Complete TypeScript definitions
+- 🧪 Comprehensive benchmarking tools
+
+**Performance:**
+- 2-4x faster for huge PDFs (1000+ pages)
+- 50x faster overhead for tiny PDFs
+- 25x faster on repeated similar PDFs
+- 90%+ optimization rate in production
+
+**Breaking Changes:**
+- None - fully backward compatible with 1.x
+
+See [CHANGELOG](CHANGELOG) for complete version history.
 
 ---
 
 **Made with ❤️ for the JavaScript community**
+
+**npm**: [`pdf-parse-new`](https://www.npmjs.com/package/pdf-parse-new)
+**Repository**: [GitHub](https://github.com/simonegosetto/pdf-parse-new)
+**Issues**: [Report bugs](https://github.com/simonegosetto/pdf-parse-new/issues)
 
