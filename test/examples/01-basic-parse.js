@@ -11,7 +11,7 @@ const PDF = require('../../index');
 async function basicParse() {
 	console.log('=== Basic PDF Parsing ===\n');
 
-	const testFile = './test/data/01-valid.pdf';
+	const testFile = '../data/01-valid.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.error('Test file not found:', testFile);

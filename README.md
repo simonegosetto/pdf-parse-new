@@ -1,12 +1,4 @@
 # pdf-parse-new
-
-> ⚠️ **Beta Release**: This is v2.0.0-beta.1 for testing purposes.
-> Install with: `npm install pdf-parse-new@beta`
-> **Stable version**: Use `npm install pdf-parse-new` for the stable 1.x release.
->
-> **Help us test!** We're collecting benchmarks from different systems.
-> See [BETA_RELEASE_GUIDE.md](BETA_RELEASE_GUIDE.md) for details.
-
 ---
 
 **Pure JavaScript cross-platform module to extract text from PDFs with intelligent performance optimization.**
@@ -15,7 +7,7 @@
 [![License](https://img.shields.io/npm/l/pdf-parse-new.svg?style=flat-square)](LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
 
-**Version 2.0.0-beta.1** - Beta release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417+ real-world benchmarks.
+**Version 2.0.0-beta.1** - Beta release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417 real-world benchmarks.
 
 ---
 
@@ -52,7 +44,7 @@
 - Automatic memory safety limits
 
 📊 **Battle-Tested Intelligence**
-- Decision tree trained on **9,417+ real-world PDF benchmarks**
+- Decision tree trained on **9,417 real-world PDF benchmarks**
 - Tested on documents from 1 to 10,000+ pages
 - CPU normalization: adapts thresholds from 4-core laptops to 48-core servers
 - Production-ready with comprehensive error handling
@@ -201,7 +193,7 @@ The `SmartPDFParser` automatically selects the optimal parsing method based on P
 
 ### Decision Tree
 
-Based on 9,417 real-world benchmarks:
+Based on 9,417 real-world benchmarks (trained 2025-11-23):
 
 | Pages     | Method    | Avg Time | Best For                    |
 |-----------|-----------|----------|-----------------------------|
@@ -637,7 +629,7 @@ PDFProcess(dataBuffer, {
 - ✅ **Zero configuration** (paths auto-resolved, npm-safe)
 - ✅ **No memory leaks** (proper cleanup, GC-friendly)
 - ✅ **Production-ready** (comprehensive error handling)
-- ✅ **Well-tested** (9,417+ benchmark samples)
+- ✅ **Well-tested** (9,417 benchmark samples)
 - ✅ **Modern** (async/await, Promises, ES6+)
 
 ### Real-World Performance
@@ -709,7 +701,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - ⚡ Fast-path optimization (50x faster overhead)
 - 💾 LRU caching (25x faster on cache hits)
 - 🎯 CPU-aware thresholds (4-48+ cores)
-- 📊 Decision tree trained on 9,417+ benchmarks
+- 📊 Decision tree trained on 9,417 benchmarks
 - 🔧 7 production-ready examples
 - 📝 Complete TypeScript definitions
 - 🧪 Comprehensive benchmarking tools

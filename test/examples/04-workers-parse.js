@@ -12,7 +12,7 @@ const PDFWorkers = require('../../lib/pdf-parse-workers');
 async function workersParse() {
 	console.log('=== Worker Threads Example ===\n');
 
-	const testFile = './test/data/test_9000.pdf';
+	const testFile = '../data/test_9000.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.log('⚠️  Large test file not found:', testFile);

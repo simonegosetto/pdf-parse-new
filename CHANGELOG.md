@@ -21,7 +21,7 @@ This is a major release that introduces intelligent automatic method selection, 
 - **Fast-path optimization**: 50x faster overhead for small PDFs (25ms → 0.5ms)
 - **LRU caching**: 25x faster on repeated similar PDFs (cache hit in ~1ms)
 - **Common scenario matching**: 90%+ hit rate for typical PDFs
-- **Decision tree** trained on 9,417+ real-world benchmark samples
+- **Decision tree** trained on 9,417 real-world benchmark samples
 - **Statistics tracking**: method usage, cache hits, optimization rates
 
 #### Multi-Core Processing

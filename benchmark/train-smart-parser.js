@@ -8,7 +8,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 
 console.log('=== Smart Parser Training ===\n');
 
@@ -321,6 +320,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per Tiny PDFs
 	if (sizeAnalysis.Tiny && sizeAnalysis.Tiny.recommended) {
 		rules.push({
+			size: 'Tiny',
 			condition: 'pages <= 10',
 			method: sizeAnalysis.Tiny.recommended,
 			reason: `Best for tiny PDFs (median: ${sizeAnalysis.Tiny.recommendedStats.median.toFixed(2)}ms)`,
@@ -331,6 +331,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per Small PDFs
 	if (sizeAnalysis.Small && sizeAnalysis.Small.recommended) {
 		rules.push({
+			size: 'Small',
 			condition: 'pages > 10 && pages <= 50',
 			method: sizeAnalysis.Small.recommended,
 			reason: `Best for small PDFs (median: ${sizeAnalysis.Small.recommendedStats.median.toFixed(2)}ms)`,
@@ -341,6 +342,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per Medium PDFs
 	if (sizeAnalysis.Medium && sizeAnalysis.Medium.recommended) {
 		rules.push({
+			size: 'Medium',
 			condition: 'pages > 50 && pages <= 200',
 			method: sizeAnalysis.Medium.recommended,
 			reason: `Best for medium PDFs (median: ${sizeAnalysis.Medium.recommendedStats.median.toFixed(2)}ms)`,
@@ -351,6 +353,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per Large PDFs
 	if (sizeAnalysis.Large && sizeAnalysis.Large.recommended) {
 		rules.push({
+			size: 'Large',
 			condition: 'pages > 200 && pages <= 500',
 			method: sizeAnalysis.Large.recommended,
 			reason: `Best for large PDFs (median: ${sizeAnalysis.Large.recommendedStats.median.toFixed(2)}ms)`,
@@ -361,6 +364,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per XLarge PDFs
 	if (sizeAnalysis.XLarge && sizeAnalysis.XLarge.recommended) {
 		rules.push({
+			size: 'XLarge',
 			condition: 'pages > 500 && pages <= 1000',
 			method: sizeAnalysis.XLarge.recommended,
 			reason: `Best for x-large PDFs (median: ${sizeAnalysis.XLarge.recommendedStats.median.toFixed(2)}ms)`,
@@ -371,6 +375,7 @@ function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	// Regola per Huge PDFs (con normalizzazione CPU)
 	if (sizeAnalysis.Huge && sizeAnalysis.Huge.recommended) {
 		rules.push({
+			size: 'Huge',
 			condition: 'pages > cpuNormalizedThreshold(1000, cpuCores, baselineCPU)',
 			conditionHuman: `pages > 1000 (normalized for CPU cores)`,
 			method: sizeAnalysis.Huge.recommended,
@@ -436,61 +441,6 @@ function getConfigForMethod(method, size) {
 	return configs[method] || {};
 }
 
-/**
- * Genera codice JavaScript per SmartPDFParser
- */
-function generateCode(rules, sizeAnalysis) {
-	console.log('\n📝 Generating optimized selectMethod() code...\n');
-
-	let code = `/**
- * Select optimal parsing method based on analysis
- * Auto-generated from ${benchmarks.length} benchmark samples
- * Generated on: ${new Date().toISOString()}
- */
-selectMethod(analysis, userOptions) {
-	// Check for forced method
-	if (this.options.forceMethod) {
-		return this.getMethodConfig(this.options.forceMethod, analysis);
-	}
-
-	// Check historical benchmarks for this PDF profile
-	const historicalBest = this.findHistoricalBest(analysis);
-	if (historicalBest) {
-		console.log(\`[SmartPDFParser] Using historical best: \${historicalBest.method}\`);
-		return this.getMethodConfig(historicalBest.method, analysis);
-	}
-
-	const { pages, availableMemory, cpuCores, estimatedComplexity } = analysis;
-
-`;
-
-	// Genera le regole
-	rules.forEach((rule, index) => {
-		const isFirst = index === 0;
-		const isLast = index === rules.length - 1;
-		const keyword = isFirst ? 'if' : 'else if';
-
-		code += `	// ${rule.reason}\n`;
-		code += `	${keyword} (${rule.condition}) {\n`;
-		code += `		return {\n`;
-		code += `			name: '${rule.method}',\n`;
-		code += `			config: ${JSON.stringify(rule.config, null, 3).replace(/\n/g, '\n\t\t\t')},\n`;
-		code += `			parser: ${getParserName(rule.method)}\n`;
-		code += `		};\n`;
-		code += `	}\n\n`;
-	});
-
-	// Fallback
-	code += `	// Fallback to batch processing\n`;
-	code += `	return {\n`;
-	code += `		name: 'batch',\n`;
-	code += `		config: { parallelizePages: true, batchSize: 10 },\n`;
-	code += `		parser: PDF\n`;
-	code += `	};\n`;
-	code += `}\n`;
-
-	return code;
-}
 
 /**
  * Ottieni il nome del parser per un metodo
@@ -507,39 +457,125 @@ function getParserName(method) {
 	return parsers[method] || 'PDF';
 }
 
+
 /**
- * Confronta workers vs processes per trovare il migliore
+ * Genera il file JSON con le regole di decisione
  */
-function compareWorkersVsProcesses(data) {
-	const workersData = data.allMethods['workers'];
-	const processesData = data.allMethods['processes'];
+function generateRulesJSON(rules, sizeAnalysis, cpuAnalysis) {
+	const path = require('path');
+	console.log('\n📝 Generating smart-parser-rules.json...');
 
-	if (!workersData || !processesData) return null;
-	if (workersData.count < 10 || processesData.count < 10) return null;
+	const baselineCPU = parseInt(Object.keys(cpuAnalysis).sort((a, b) => cpuAnalysis[b].samples - cpuAnalysis[a].samples)[0] || 24);
 
-	return workersData.median < processesData.median ? 'workers' : 'processes';
+	const rulesJSON = {
+		version: '2.0.0',
+		generatedAt: new Date().toISOString(),
+		benchmarkSamples: benchmarks.length,
+		baselineCPU: baselineCPU,
+		rules: [],
+		fallback: {
+			method: 'batch',
+			config: {
+				parallelizePages: true,
+				batchSize: 50
+			},
+			parser: 'PDF'
+		}
+	};
+
+	// Converti le regole nel formato JSON
+	rules.forEach(rule => {
+		const sizeName = rule.size || 'Huge';
+		const jsonRule = {
+			name: sizeName.toLowerCase(),
+			condition: {},
+			method: rule.method,
+			config: rule.config,
+			parser: getParserName(rule.method),
+			stats: {
+				median: parseFloat(rule.reason.match(/median: ([\d.]+)ms/)?.[1] || 0),
+				samples: sizeAnalysis[sizeName]?.samples || 0
+			}
+		};
+
+		// Converte la condizione
+		if (rule.cpuNormalized) {
+			jsonRule.condition = {
+				type: 'pages',
+				operator: '>',
+				value: `cpuNormalizedThreshold(${rule.baselineThreshold})`,
+				cpuNormalized: true,
+				baselineThreshold: rule.baselineThreshold
+			};
+			jsonRule.stats.notes = 'CPU-normalized: threshold adapts to available cores';
+		} else {
+			// Parse condition string like "pages <= 10" or "pages > 10 && pages <= 50"
+			const condMatch = rule.condition.match(/pages\s*([<>=]+)\s*(\d+)(?:\s*&&\s*pages\s*([<>=]+)\s*(\d+))?/);
+			if (condMatch) {
+				if (condMatch[3]) {
+					// Range condition
+					jsonRule.condition = {
+						type: 'pages',
+						operator: 'range',
+						min: parseInt(condMatch[2]),
+						max: parseInt(condMatch[4])
+					};
+				} else {
+					// Simple condition
+					jsonRule.condition = {
+						type: 'pages',
+						operator: condMatch[1],
+						value: parseInt(condMatch[2])
+					};
+				}
+			}
+		}
+
+		// Converti valori dinamici nelle config
+		if (typeof rule.config.maxProcesses === 'string' && rule.config.maxProcesses.includes('Math.max')) {
+			jsonRule.config.maxProcesses = 'calculateOptimalWorkers';
+		}
+		if (typeof rule.config.maxWorkers === 'string' && rule.config.maxWorkers.includes('Math.max')) {
+			jsonRule.config.maxWorkers = 'calculateOptimalWorkers';
+		}
+
+		rulesJSON.rules.push(jsonRule);
+	});
+
+	// Scrivi il file JSON
+	const rulesFile = path.join(__dirname, '..', 'lib', 'smart-parser-rules.json');
+	fs.writeFileSync(rulesFile, JSON.stringify(rulesJSON, null, 2));
+	console.log(`✓ Rules file created: ${rulesFile}`);
+	console.log(`  - ${rulesJSON.rules.length} rules`);
+	console.log(`  - ${rulesJSON.benchmarkSamples} benchmark samples`);
+	console.log(`  - Baseline CPU: ${rulesJSON.baselineCPU} cores`);
+
+	return true;
 }
 
 /**
  * Salva i risultati del training
  */
-function saveTrainingResults(sizeAnalysis, complexityAnalysis, rules, code) {
+function saveTrainingResults(sizeAnalysis, complexityAnalysis, cpuAnalysis, rules) {
 	const report = {
 		generatedAt: new Date().toISOString(),
 		benchmarksAnalyzed: benchmarks.length,
 		sizeAnalysis,
 		complexityAnalysis,
-		decisionRules: rules,
-		generatedCode: code
+		decisionRules: rules
 	};
 
 	const reportFile = './smart-parser-training-report.json';
 	fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
 	console.log(`\n✓ Training report saved to: ${reportFile}`);
 
-	const codeFile = './smart-parser-optimized.js';
-	fs.writeFileSync(codeFile, code);
-	console.log(`✓ Optimized code saved to: ${codeFile}`);
+	// Genera il file JSON con le regole
+	const updated = generateRulesJSON(rules, sizeAnalysis, cpuAnalysis);
+
+	if (!updated) {
+		console.log('\n⚠️  Rules JSON not generated.');
+		console.log('   Please check the training report for details.');
+	}
 
 	return report;
 }
@@ -562,20 +598,20 @@ async function main() {
 		// Genera regole
 		const rules = generateDecisionRules(sizeAnalysis, cpuAnalysis);
 
-		// Genera codice
-		const code = generateCode(rules, sizeAnalysis);
-
-		// Salva risultati
-		saveTrainingResults(sizeAnalysis, complexityAnalysis, rules, code);
+		// Salva risultati (genera anche il JSON delle regole)
+		saveTrainingResults(sizeAnalysis, complexityAnalysis, cpuAnalysis, rules);
 
 		console.log('\n' + '='.repeat(70));
 		console.log('✅ Training completed successfully!');
 		console.log('='.repeat(70));
+		console.log('\nWhat was generated:');
+		console.log('✓ Training report: benchmark/smart-parser-training-report.json');
+		console.log('✓ Rules configuration: lib/smart-parser-rules.json');
 		console.log('\nNext steps:');
-		console.log('1. Review the training report: smart-parser-training-report.json');
-		console.log('2. Check the optimized code: smart-parser-optimized.js');
-		console.log('3. Update SmartPDFParser.js with the new selectMethod()');
-		console.log('4. Test the optimized parser with your PDFs');
+		console.log('1. Review the training report for decision rules');
+		console.log('2. Test the updated parser: npm run example:smart');
+		console.log('3. Compare performance: npm run example:compare');
+		console.log('4. If satisfied, commit the changes');
 		console.log();
 
 	} catch (error) {

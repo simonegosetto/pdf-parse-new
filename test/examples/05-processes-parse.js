@@ -12,7 +12,7 @@ const PDFProcesses = require('../../lib/pdf-parse-processes');
 async function processesParse() {
 	console.log('=== Child Processes Example ===\n');
 
-	const testFile = './test/data/test_9000.pdf';
+	const testFile = '../data/test_9000.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.log('⚠️  Large test file not found:', testFile);

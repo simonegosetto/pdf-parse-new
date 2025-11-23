@@ -12,9 +12,9 @@ async function smartParse() {
 	console.log('=== SmartPDFParser Example ===\n');
 
 	const testFiles = [
-		'./test/data/01-valid.pdf',
-		'./test/data/02-valid.pdf',
-		'./test/data/04-valid.pdf'
+		'../data/01-valid.pdf',
+		'../data/02-valid.pdf',
+		'../data/04-valid.pdf'
 	];
 
 	const parser = new SmartParser({

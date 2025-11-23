@@ -12,7 +12,7 @@ async function testLigatures() {
 	console.log('=== Issue #10 - Ligature Handling Test ===\n');
 
 	// Test with user-provided PDF if available
-	const testFile = './test/data/pdfTest.pdf';
+	const testFile = '../data/pdfTest.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.log('⚠️  Test PDF from issue #10 not found');

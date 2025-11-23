@@ -15,7 +15,7 @@ const SmartParser = require('../../lib/SmartPDFParser');
 async function compareAll() {
 	console.log('=== Compare All Parsing Methods ===\n');
 
-	const testFile = './test/data/test_9000.pdf';
+	const testFile = '../data/test_9000.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.log('⚠️  Large test file not found:', testFile);

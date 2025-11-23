@@ -5,7 +5,7 @@ This directory contains tools for performance analysis and optimization of pdf-p
 ## Files
 
 - **collect-benchmarks.js** - Collect performance data from PDFs
-- **train-smart-parser.js** - Analyze benchmarks and generate optimized decision tree
+- **train-smart-parser.js** - Analyze benchmarks and generate decision rules (outputs `lib/smart-parser-rules.json`)
 - **test-pdfs.example.json** - Example configuration file
 - **test-pdfs.json** - Your PDF list (gitignored, create from example)
 - **smart-parser-benchmarks.json** - Benchmark data (gitignored, auto-generated)
@@ -55,7 +55,7 @@ node train-smart-parser.js
 
 This analyzes benchmarks and generates optimized parsing rules in:
 - `smart-parser-training-report.json` - Analysis report
-- `smart-parser-optimized.js` - Generated code
+- `smart-parser-training-report.json` - Training report with decision rules
 
 ## Features
 
@@ -69,11 +69,19 @@ This analyzes benchmarks and generates optimized parsing rules in:
 
 ### train-smart-parser.js
 
-- ✅ Analyzes 9000+ benchmarks
-- ✅ Generates optimized decision tree
+- ✅ Analyzes 15,526+ benchmarks
+- ✅ Generates JSON-based decision rules (not code!)
 - ✅ Statistical analysis (median, P95, std dev)
 - ✅ Identifies best method per PDF size category
-- ✅ Creates production-ready code
+- ✅ CPU-aware normalization for multi-core systems
+
+### Output: `lib/smart-parser-rules.json`
+
+The training script generates a JSON configuration file that SmartPDFParser reads at runtime. This means:
+- 🚀 No code modification needed to update rules
+- 📊 Easy to version and track changes
+- 🔧 Can be customized per deployment
+- 🧪 Enables A/B testing of different strategies
 
 ## Notes
 
@@ -84,14 +92,14 @@ This analyzes benchmarks and generates optimized parsing rules in:
 
 ## Performance Insights
 
-From 9,417 real-world benchmarks:
+From 15,526 real-world benchmarks (trained 2025-11-23):
 
-| PDF Size | Best Method | Median Time |
-|----------|-------------|-------------|
-| 1-10 pages | batch-5 | 10ms |
-| 11-50 pages | batch-10 | 107ms |
-| 51-200 pages | batch-20 | 332ms |
-| 201-500 pages | batch-50 | 1102ms |
-| 501-1000 pages | batch-50 | 1988ms |
-| **1000+ pages** | **processes** | **4468ms (2.6x faster!)** |
+| PDF Size | Best Method | Median Time | Samples |
+|----------|-------------|-------------|---------|
+| 1-10 pages | batch-5 | 10.66ms | 4,887 |
+| 11-50 pages | batch-10 | 103.87ms | 1,602 |
+| 51-200 pages | stream | 262.02ms | 4,904 |
+| 201-500 pages | batch-50 | 1007.83ms | 1,768 |
+| 501-1000 pages | processes | 1907.46ms | 90 |
+| **1000+ pages** | **processes** | **4016.89ms** | **2,275** |
 

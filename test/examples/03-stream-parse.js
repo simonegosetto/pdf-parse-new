@@ -11,7 +11,7 @@ const PDFStream = require('../../lib/pdf-parse-stream');
 async function streamParse() {
 	console.log('=== Streaming Parse Example ===\n');
 
-	const testFile = './test/data/01-valid.pdf';
+	const testFile = '../data/01-valid.pdf';
 
 	if (!fs.existsSync(testFile)) {
 		console.error('Test file not found:', testFile);
