@@ -1,12 +1,21 @@
 # pdf-parse-new
 
+> ⚠️ **Beta Release**: This is v2.0.0-beta.1 for testing purposes.
+> Install with: `npm install pdf-parse-new@beta`
+> **Stable version**: Use `npm install pdf-parse-new` for the stable 1.x release.
+>
+> **Help us test!** We're collecting benchmarks from different systems.
+> See [BETA_RELEASE_GUIDE.md](BETA_RELEASE_GUIDE.md) for details.
+
+---
+
 **Pure JavaScript cross-platform module to extract text from PDFs with intelligent performance optimization.**
 
 [![npm version](https://img.shields.io/npm/v/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
 [![License](https://img.shields.io/npm/l/pdf-parse-new.svg?style=flat-square)](LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
 
-**Version 2.0.0** - Major release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417+ real-world benchmarks.
+**Version 2.0.0-beta.1** - Beta release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417+ real-world benchmarks.
 
 ---
 

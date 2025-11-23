@@ -1,6 +1,6 @@
 {
     "name": "pdf-parse-new",
-    "version": "2.0.0",
+    "version": "2.0.0-beta.1",
     "description": "Pure javascript cross-platform module to extract text from PDFs with AI-powered optimization and multi-core processing.",
     "main": "lib/pdf-parse.js",
     "types": "index.d.ts",
@@ -52,16 +52,19 @@
         "test:ligatures": "node test/examples/08-test-ligatures.js",
         "up:patch": "npm version patch",
         "up:minor": "npm version minor",
-        "up:major": "npm version major"
+        "up:major": "npm version major",
+        "beta:next": "npm version prerelease --preid=beta",
+        "beta:publish": "npm publish --tag beta",
+        "beta:install": "npm install pdf-parse-new@beta"
     },
-    "homepage": "https://github.com/simonegosetto/pdf-parse",
+    "homepage": "https://github.com/simonegosetto/pdf-parse-new",
     "bugs": {
-        "url": "https://github.com/simonegosetto/pdf-parse/issues",
+        "url": "https://github.com/simonegosetto/pdf-parse-new/issues",
         "email": "simone.gosetto@gmail.com"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/simonegosetto/pdf-parse.git"
+        "url": "https://github.com/simonegosetto/pdf-parse-new.git"
     },
     "author": "Simone Gosetto <simone.gosetto@gmail.com>",
     "license": "MIT",
