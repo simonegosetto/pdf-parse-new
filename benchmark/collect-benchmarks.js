@@ -3,16 +3,72 @@ const PDF = require('./lib/pdf-parse');
 const PDFStream = require('./lib/pdf-parse-stream');
 const PDFAggressive = require('./lib/pdf-parse-aggressive');
 const PDFProcesses = require('./lib/pdf-parse-processes');
+const PDFWorkers = require('./lib/pdf-parse-workers');
 const fs = require('fs');
+const { URL } = require('url');
+const axios = require("axios");
 
 console.log('=== Intensive Benchmark Collection ===\n');
+
+/**
+ * Download PDF from remote URL
+ */
+async function downloadPDF(url) {
+	try {
+		console.log(`📥 Downloading PDF from: ${url}`);
+
+		const response = await axios.get(url, {
+			responseType: 'arraybuffer',
+			timeout: 30000, // 30 second timeout
+			maxRedirects: 5
+		});
+
+		const buffer = Buffer.from(response.data);
+		console.log(`✓ Downloaded ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
+		return buffer;
+	} catch (error) {
+		if (error.code === 'ECONNABORTED') {
+			throw new Error('Download timeout (30s)');
+		} else if (error.response) {
+			throw new Error(`Failed to download: HTTP ${error.response.status}`);
+		} else {
+			throw new Error(`Download failed: ${error.message}`);
+		}
+	}
+}
+
+/**
+ * Check if string is a URL
+ */
+function isURL(str) {
+	try {
+		const url = new URL(str);
+		return url.protocol === 'http:' || url.protocol === 'https:';
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Load PDF from file or URL
+ */
+async function loadPDF(source) {
+	if (isURL(source)) {
+		return await downloadPDF(source);
+	} else {
+		return fs.readFileSync(source);
+	}
+}
 
 /**
  * Test all methods on a PDF to collect comprehensive data
  */
 async function benchmarkAllMethods(file) {
-	const dataBuffer = fs.readFileSync(file);
+	const dataBuffer = await loadPDF(file);
+
 	const results = [];
+	const fileName = isURL(file) ? Math.random().toString() /*new URL(file).pathname.split('/').pop()*/ : file.split(/[/\\]/).pop();
+	console.log(`Starting benchmarks for: ${fileName}`);
 
 	console.log(`\n${'='.repeat(80)}`);
 	console.log(`📄 Benchmarking: ${file}`);
@@ -38,27 +94,30 @@ async function benchmarkAllMethods(file) {
 	methods.push(
 		{ name: 'sequential', fn: PDF, config: { parallelizePages: false } },
 		{ name: 'batch-5', fn: PDF, config: { parallelizePages: true, batchSize: 5 } },
-		{ name: 'batch-10', fn: PDF, config: { parallelizePages: true, batchSize: 10 } }
+		{ name: 'batch-10', fn: PDF, config: { parallelizePages: true, batchSize: 10 } },
 	);
 
 	if (pages > 50) {
 		methods.push(
-			{ name: 'batch-20', fn: PDF, config: { parallelizePages: true, batchSize: 20 } }
-		);
+			{ name: 'batch-20', fn: PDF, config: { parallelizePages: true, batchSize: 20 } },
+/*		);
 	}
 
 	if (pages > 100) {
-		methods.push(
+		methods.push(*/
 			{ name: 'stream', fn: PDFStream, config: { chunkSize: 500, batchSize: 10 } },
-			{ name: 'aggressive', fn: PDFAggressive, config: { chunkSize: 500, batchSize: 20 } }
-		);
-	}
-
-	if (pages > 500) {
-		methods.push(
+			{ name: 'aggressive', fn: PDFAggressive, config: { chunkSize: 500, batchSize: 20 } },
+			{ name: 'workers', fn: PDFWorkers, config: { chunkSize: 500, batchSize: 10, maxProcesses: require('os').cpus().length - 1 } },
 			{ name: 'processes', fn: PDFProcesses, config: { chunkSize: 500, batchSize: 10, maxProcesses: require('os').cpus().length - 1 } }
 		);
 	}
+
+	/*if (pages > 500) {
+		methods.push(
+			{ name: 'workers', fn: PDFWorkers, config: { chunkSize: 500, batchSize: 10, maxProcesses: require('os').cpus().length - 1 } },
+			{ name: 'processes', fn: PDFProcesses, config: { chunkSize: 500, batchSize: 10, maxProcesses: require('os').cpus().length - 1 } }
+		);
+	}*/
 
 	// Test each method
 	for (const method of methods) {
@@ -76,7 +135,7 @@ async function benchmarkAllMethods(file) {
 			console.log(`✓ ${method.name}: ${duration.toFixed(2)}ms (${result.text.length.toLocaleString()} chars)`);
 
 			results.push({
-				file: file.split('/').pop(),
+				file: fileName,
 				pages,
 				size: dataBuffer.length,
 				method: method.name,
@@ -90,7 +149,7 @@ async function benchmarkAllMethods(file) {
 		} catch (error) {
 			console.error(`✗ ${method.name}: ${error.message}`);
 			results.push({
-				file: file.split('/').pop(),
+				file: fileName,
 				pages,
 				size: dataBuffer.length,
 				method: method.name,
@@ -110,32 +169,66 @@ async function benchmarkAllMethods(file) {
  * Run comprehensive benchmarks
  */
 async function runBenchmarks() {
-	const testFiles = [
-		'./test/data/01-valid.pdf',
-		'./test/data/02-valid.pdf',
-		'./test/data/04-valid.pdf',
-		'./test/data/05-versions-space.pdf',
-		'./test/data/test_373.pdf',
-		'./test/data/test_9000.pdf'
-	];
+	// Load test files from external JSON
+	const testFilesData = JSON.parse(fs.readFileSync('./test-pdfs.json', 'utf8'));
+	const testFiles = testFilesData.urls || [];
 
 	const allResults = [];
+	const outputFile = './intensive-benchmarks.json';
 
 	for (const file of testFiles) {
-		if (!fs.existsSync(file)) {
+		if (!isURL(file) && !fs.existsSync(file)) {
 			console.log(`\n⏭️  Skipping ${file} (not found)`);
 			continue;
 		}
 
-		const results = await benchmarkAllMethods(file);
-		allResults.push(...results);
+		try {
+			const results = await benchmarkAllMethods(file);
+			allResults.push(...results);
+
+			// Save results after each file (incremental save)
+			fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
+
+			// Also save smart parser format incrementally
+			const smartFile = './smart-parser-benchmarks.json';
+			const converted = convertToSmartParserFormatData(allResults);
+			fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));
+
+			console.log(`💾 Progress saved (${allResults.length} results so far)`);
+		} catch (error) {
+			console.error(`\n❌ Fatal error processing ${file}:`);
+			console.error(`   ${error.message}`);
+			console.log(`   Continuing with next file...\n`);
+
+			// Log the failed file
+			allResults.push({
+				file: isURL(file) ? new URL(file).pathname.split('/').pop() : file.split(/[/\\]/).pop(),
+				pages: 0,
+				size: 0,
+				method: 'N/A',
+				config: {},
+				duration: 0,
+				success: false,
+				error: `Fatal error: ${error.message}`,
+				timestamp: Date.now()
+			});
+
+			// Save even failed attempts
+			fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
+
+			// Also save smart parser format incrementally
+			const smartFile = './smart-parser-benchmarks.json';
+			const converted = convertToSmartParserFormatData(allResults);
+			fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));
+
+			console.log(`💾 Progress saved (${allResults.length} results so far)`);
+		}
 
 		// Small delay between files
 		await new Promise(resolve => setTimeout(resolve, 1000));
 	}
 
-	// Save results
-	const outputFile = './intensive-benchmarks.json';
+	// Final save (redundant but ensures everything is saved)
 	fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
 	console.log(`\n\n✅ Collected ${allResults.length} benchmarks`);
 	console.log(`📊 Results saved to: ${outputFile}`);
@@ -217,10 +310,10 @@ function analyzeResults(results) {
 }
 
 /**
- * Convert results to SmartPDFParser benchmark format
+ * Convert results to SmartPDFParser benchmark format (data only)
  */
-function convertToSmartParserFormat(results) {
-	const converted = results
+function convertToSmartParserFormatData(results) {
+	return results
 		.filter(r => r.success)
 		.map(r => ({
 			timestamp: r.timestamp,
@@ -234,6 +327,13 @@ function convertToSmartParserFormat(results) {
 			cpuCores: require('os').cpus().length,
 			availableMemory: require('os').freemem()
 		}));
+}
+
+/**
+ * Convert results to SmartPDFParser benchmark format
+ */
+function convertToSmartParserFormat(results) {
+	const converted = convertToSmartParserFormatData(results);
 
 	const smartFile = './smart-parser-benchmarks.json';
 	fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));

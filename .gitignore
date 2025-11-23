@@ -1,3 +1,7 @@
+# Benchmark data (contains private URLs)
+benchmark/test-pdfs.json
+benchmark/*.json
+
 # Logs
 logs
 *.log
