@@ -1,9 +1,9 @@
-const SmartPDFParser = require('./lib/SmartPDFParser');
-const PDF = require('./lib/pdf-parse');
-const PDFStream = require('./lib/pdf-parse-stream');
-const PDFAggressive = require('./lib/pdf-parse-aggressive');
-const PDFProcesses = require('./lib/pdf-parse-processes');
-const PDFWorkers = require('./lib/pdf-parse-workers');
+const SmartPDFParser = require('../lib/SmartPDFParser');
+const PDF = require('../lib/pdf-parse');
+const PDFStream = require('../lib/pdf-parse-stream');
+const PDFAggressive = require('../lib/pdf-parse-aggressive');
+const PDFProcesses = require('../lib/pdf-parse-processes');
+const PDFWorkers = require('../lib/pdf-parse-workers');
 const fs = require('fs');
 const { URL } = require('url');
 const axios = require("axios");
@@ -143,6 +143,8 @@ async function benchmarkAllMethods(file) {
 				duration,
 				characters: result.text.length,
 				success: true,
+				cpuCores: require('os').cpus().length, // ✅ Importante per normalizzazione
+				availableMemory: require('os').freemem(),
 				timestamp: Date.now()
 			});
 
@@ -174,9 +176,9 @@ async function runBenchmarks() {
 	const testFiles = testFilesData.urls || [];
 
 	const allResults = [];
-	const outputFile = './intensive-benchmarks.json';
+	const outputFile = './smart-parser-benchmarks.json';
 
-	for (const file of testFiles) {
+	for (const file of testFiles.reverse()) {
 		if (!isURL(file) && !fs.existsSync(file)) {
 			console.log(`\n⏭️  Skipping ${file} (not found)`);
 			continue;
@@ -186,13 +188,9 @@ async function runBenchmarks() {
 			const results = await benchmarkAllMethods(file);
 			allResults.push(...results);
 
-			// Save results after each file (incremental save)
-			fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
-
-			// Also save smart parser format incrementally
-			const smartFile = './smart-parser-benchmarks.json';
+			// Save in smart parser format incrementally (only format needed)
 			const converted = convertToSmartParserFormatData(allResults);
-			fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));
+			fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
 
 			console.log(`💾 Progress saved (${allResults.length} results so far)`);
 		} catch (error) {
@@ -214,12 +212,8 @@ async function runBenchmarks() {
 			});
 
 			// Save even failed attempts
-			fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
-
-			// Also save smart parser format incrementally
-			const smartFile = './smart-parser-benchmarks.json';
 			const converted = convertToSmartParserFormatData(allResults);
-			fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));
+			fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
 
 			console.log(`💾 Progress saved (${allResults.length} results so far)`);
 		}
@@ -228,16 +222,15 @@ async function runBenchmarks() {
 		await new Promise(resolve => setTimeout(resolve, 1000));
 	}
 
-	// Final save (redundant but ensures everything is saved)
-	fs.writeFileSync(outputFile, JSON.stringify(allResults, null, 2));
+	// Final save (ensure everything is saved)
+	const converted = convertToSmartParserFormatData(allResults);
+	fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
+
 	console.log(`\n\n✅ Collected ${allResults.length} benchmarks`);
 	console.log(`📊 Results saved to: ${outputFile}`);
 
 	// Analyze results
 	analyzeResults(allResults);
-
-	// Convert to smart parser format and save
-	convertToSmartParserFormat(allResults);
 }
 
 /**
@@ -329,17 +322,7 @@ function convertToSmartParserFormatData(results) {
 		}));
 }
 
-/**
- * Convert results to SmartPDFParser benchmark format
- */
-function convertToSmartParserFormat(results) {
-	const converted = convertToSmartParserFormatData(results);
 
-	const smartFile = './smart-parser-benchmarks.json';
-	fs.writeFileSync(smartFile, JSON.stringify(converted, null, 2));
-	console.log(`\n✅ Converted benchmarks saved to: ${smartFile}`);
-	console.log(`   Ready for SmartPDFParser learning!`);
-}
 
 /**
  * Estimate complexity from benchmark result

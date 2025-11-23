@@ -7,7 +7,7 @@ const fs = require('fs');
 
 
 // Test with large PDF - adjust path as needed
-let PDF_FILE = './test/data/01-valid.pdf';
+let PDF_FILE = './test/data/test_9000.pdf';
 if (!fs.existsSync(PDF_FILE)) {
 	PDF_FILE = './test/data/test_373.pdf';
 	if (!fs.existsSync(PDF_FILE)) {
@@ -23,7 +23,7 @@ console.log(`Size: ${(dataBuffer.length / 1024 / 1024).toFixed(2)} MB\n`);
 
 async function runBenchmark() {
 	const results = [];
-	// const dataSeq = {numpages: 9000};
+	let savedText = ''; // Store text from first successful parse
 
 	// 1. Sequential parsing (baseline)
 	console.log('🔄 Sequential parsing...');
@@ -94,11 +94,25 @@ async function runBenchmark() {
 	}
 
 	// 4. Worker Threads (TRUE MULTI-CORE PARALLELISM) 🚀
-	if (dataSeq.numpages > 100) {
+	// Get page count first
+	const quickCheck = await PDF(dataBuffer, { max: 1 });
+	const totalPages = quickCheck.numpages;
+
+	if (totalPages > 100) {
 		try {
 			console.log('⚡ Worker threads (true multi-core parallelism)...');
 			const cpuCores = require('os').cpus().length;
-			const workers = Math.max(2, cpuCores - 1);
+			const pdfSizeMB = dataBuffer.length / 1024 / 1024;
+
+			// Limit workers for large PDFs to avoid memory issues
+			// Each worker gets a copy of the PDF data
+			let workers;
+			if (pdfSizeMB > 50) {
+				workers = Math.min(4, Math.max(2, cpuCores - 1));
+				console.log(`  - Large PDF (${pdfSizeMB.toFixed(1)}MB): limiting to ${workers} workers`);
+			} else {
+				workers = Math.max(2, cpuCores - 1);
+			}
 			console.log(`  - Using ${workers} CPU cores out of ${cpuCores}`);
 
 			const startWorkers = performance.now();
@@ -117,6 +131,8 @@ async function runBenchmark() {
 			console.log(`  - Characters: ${dataWorkers.text.length}`);
 			console.log(`  - TRUE parallel execution across ${workers} CPU cores 🚀\n`);
 
+			if (!savedText) savedText = dataWorkers.text; // Save first result
+
 			results.push({
 				mode: 'Workers (threads)',
 				time: parseFloat(timeWorkers),
@@ -130,7 +146,7 @@ async function runBenchmark() {
 	}
 
 	// 5. Child Processes (Alternative multi-core) 🚀
-	if (dataSeq.numpages > 100) {
+	if (totalPages > 100) {
 		try {
 			console.log('🔥 Child processes (alternative multi-core)...');
 			const cpuCores = require('os').cpus().length;
@@ -153,6 +169,8 @@ async function runBenchmark() {
 			console.log(`  - Characters: ${dataProcesses.text.length}`);
 			console.log(`  - TRUE parallel execution across ${processes} CPU cores\n`);
 
+			if (!savedText) savedText = dataProcesses.text; // Save if not saved yet
+
 			results.push({
 				mode: 'Processes (fork)',
 				time: parseFloat(timeProcesses),
@@ -166,7 +184,7 @@ async function runBenchmark() {
 	}
 
 	// 6. Aggressive parallelization (single-thread fallback)
-	if (dataSeq.numpages > 100) {
+	/*if (dataSeq.numpages > 100) {
 		console.log('💥 Aggressive parallelization (single-thread)...');
 		const startAggressive = performance.now();
 		const dataAggressive = await PDFAggressive(dataBuffer, {
@@ -188,7 +206,7 @@ async function runBenchmark() {
 			pages: dataAggressive.numpages,
 			chars: dataAggressive.text.length
 		});
-	}
+	}*/
 
 	// Summary
 	console.log('\n📊 Results Summary:');
@@ -221,22 +239,24 @@ async function runBenchmark() {
 	console.log(`   Characters: ${bestResult.chars.toLocaleString()}`);
 
 	// Save result
-	fs.writeFileSync(`${PDF_FILE}.txt`, dataSeq.text, {
-		encoding: 'utf8',
-		flag: 'w'
-	});
-	console.log(`\n💾 Text saved to: ${PDF_FILE}.txt`);
+	if (savedText) {
+		fs.writeFileSync(`${PDF_FILE}.txt`, savedText, {
+			encoding: 'utf8',
+			flag: 'w'
+		});
+		console.log(`\n💾 Text saved to: ${PDF_FILE}.txt`);
+	}
 
 	// Recommendations
 	console.log('\n💡 Recommendations:');
-	if (dataSeq.numpages < 50) {
-		console.log(`   For ${dataSeq.numpages} pages: Use sequential or small batch (5-10)`);
-	} else if (dataSeq.numpages < 500) {
-		console.log(`   For ${dataSeq.numpages} pages: Use batch 10-20`);
-	} else if (dataSeq.numpages < 1000) {
-		console.log(`   For ${dataSeq.numpages} pages: Use streaming for memory efficiency`);
+	if (totalPages < 50) {
+		console.log(`   For ${totalPages} pages: Use sequential or small batch (5-10)`);
+	} else if (totalPages < 500) {
+		console.log(`   For ${totalPages} pages: Use batch 10-20`);
+	} else if (totalPages < 1000) {
+		console.log(`   For ${totalPages} pages: Use streaming for memory efficiency`);
 	} else {
-		console.log(`   For ${dataSeq.numpages} pages: Use aggressive or workers for best performance`);
+		console.log(`   For ${totalPages} pages: Use processes or workers for best performance`);
 	}
 }
 

@@ -8,7 +8,7 @@ This directory contains tools for performance analysis and optimization of pdf-p
 - **train-smart-parser.js** - Analyze benchmarks and generate optimized decision tree
 - **test-pdfs.example.json** - Example configuration file
 - **test-pdfs.json** - Your PDF list (gitignored, create from example)
-- **\*.json** - Benchmark data files (gitignored)
+- **smart-parser-benchmarks.json** - Benchmark data (gitignored, auto-generated)
 
 ## Quick Start
 
@@ -42,9 +42,8 @@ This will:
 - Save results incrementally (no data loss)
 - Generate detailed performance reports
 
-Output files:
-- `intensive-benchmarks.json` - Detailed results
-- `smart-parser-benchmarks.json` - Training data
+Output file:
+- `smart-parser-benchmarks.json` - Training data (optimized format)
 
 ### 3. Train Decision Tree (Optional)
 
@@ -94,5 +93,5 @@ From 9,417 real-world benchmarks:
 | 51-200 pages | batch-20 | 332ms |
 | 201-500 pages | batch-50 | 1102ms |
 | 501-1000 pages | batch-50 | 1988ms |
-| **1000+ pages** | **workers** | **2355ms (4x faster!)** |
+| **1000+ pages** | **processes** | **4468ms (2.6x faster!)** |
 

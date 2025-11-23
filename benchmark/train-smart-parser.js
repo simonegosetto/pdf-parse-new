@@ -227,10 +227,94 @@ function analyzeByComplexity() {
 }
 
 /**
+ * Analizza l'impatto del numero di CPU cores
+ */
+function analyzeByCPUCores() {
+	console.log('\n🖥️  Analyzing by CPU cores...\n');
+
+	// Raggruppa per numero di core
+	const coreGroups = {};
+	benchmarks.forEach(b => {
+		if (!b.success || !b.cpuCores) return;
+
+		const cores = b.cpuCores;
+		if (!coreGroups[cores]) {
+			coreGroups[cores] = [];
+		}
+		coreGroups[cores].push(b);
+	});
+
+	const results = {};
+
+	for (const [cores, samples] of Object.entries(coreGroups).sort((a, b) => parseInt(a[0]) - parseInt(b[0]))) {
+		const byMethod = {};
+		samples.forEach(b => {
+			const method = normalizeMethodName(b.method);
+			if (!byMethod[method]) byMethod[method] = [];
+			byMethod[method].push(b.duration);
+		});
+
+		const methodStats = {};
+		for (const [method, durations] of Object.entries(byMethod)) {
+			if (durations.length < 5) continue; // Troppo pochi campioni
+			methodStats[method] = {
+				count: durations.length,
+				median: [...durations].sort((a, b) => a - b)[Math.floor(durations.length / 2)]
+			};
+		}
+
+		const best = Object.entries(methodStats)
+			.sort((a, b) => a[1].median - b[1].median)[0];
+
+		results[cores] = {
+			samples: samples.length,
+			best: best ? best[0] : null,
+			bestMedian: best ? best[1].median : null,
+			methodStats
+		};
+
+		console.log(`${cores.toString().padEnd(3)} cores (${samples.length.toString().padStart(4)} samples) → Best: ${best ? best[0].padEnd(10) : 'N/A'.padEnd(10)} (${best ? best[1].median.toFixed(2) : 'N/A'}ms)`);
+	}
+
+	// Calcola il rapporto di scaling
+	console.log('\n📊 CPU Scaling Analysis:');
+	const coresList = Object.keys(results).map(Number).sort((a, b) => a - b);
+
+	if (coresList.length >= 2) {
+		const baseline = results[coresList[0]];
+		console.log(`\nBaseline: ${coresList[0]} cores`);
+
+		for (let i = 1; i < coresList.length; i++) {
+			const cores = coresList[i];
+			const data = results[cores];
+
+			if (baseline.best === data.best && baseline.bestMedian && data.bestMedian) {
+				const speedup = baseline.bestMedian / data.bestMedian;
+				const efficiency = (speedup / (cores / coresList[0])) * 100;
+				console.log(`  ${cores} cores: ${speedup.toFixed(2)}x speedup (${efficiency.toFixed(1)}% efficiency)`);
+			}
+		}
+	}
+
+	return results;
+}
+
+/**
  * Genera le regole decisionali ottimizzate
  */
-function generateDecisionRules(sizeAnalysis) {
+function generateDecisionRules(sizeAnalysis, cpuAnalysis) {
 	console.log('\n🎯 Generating decision rules...\n');
+
+	// Trova la CPU baseline dai benchmark (la più comune)
+	const cpuCounts = {};
+	benchmarks.forEach(b => {
+		if (b.cpuCores) {
+			cpuCounts[b.cpuCores] = (cpuCounts[b.cpuCores] || 0) + 1;
+		}
+	});
+	const baselineCPU = parseInt(Object.entries(cpuCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 24);
+	console.log(`📊 Baseline CPU: ${baselineCPU} cores (most common in benchmarks)`);
+	console.log(`   This will be used to normalize thresholds for other CPUs\n`);
 
 	const rules = [];
 
@@ -284,22 +368,34 @@ function generateDecisionRules(sizeAnalysis) {
 		});
 	}
 
-	// Regola per Huge PDFs
+	// Regola per Huge PDFs (con normalizzazione CPU)
 	if (sizeAnalysis.Huge && sizeAnalysis.Huge.recommended) {
 		rules.push({
-			condition: 'pages > 1000',
+			condition: 'pages > cpuNormalizedThreshold(1000, cpuCores, baselineCPU)',
+			conditionHuman: `pages > 1000 (normalized for CPU cores)`,
 			method: sizeAnalysis.Huge.recommended,
 			reason: `Best for huge PDFs (median: ${sizeAnalysis.Huge.recommendedStats.median.toFixed(2)}ms)`,
-			config: getConfigForMethod(sizeAnalysis.Huge.recommended, 'huge')
+			config: getConfigForMethod(sizeAnalysis.Huge.recommended, 'huge'),
+			cpuNormalized: true,
+			baselineCPU: baselineCPU,
+			baselineThreshold: 1000
 		});
 	}
 
 	console.log('Decision Rules:');
 	rules.forEach((rule, index) => {
-		console.log(`\n${index + 1}. IF ${rule.condition}`);
+		console.log(`\n${index + 1}. IF ${rule.conditionHuman || rule.condition}`);
 		console.log(`   THEN use: ${rule.method}`);
 		console.log(`   Config: ${JSON.stringify(rule.config)}`);
 		console.log(`   Reason: ${rule.reason}`);
+		if (rule.cpuNormalized) {
+			console.log(`   💡 CPU-aware: threshold scales with available cores`);
+			console.log(`      Examples:`);
+			console.log(`        4 cores  → ${Math.floor(rule.baselineThreshold * 4 / baselineCPU)} pages`);
+			console.log(`       12 cores  → ${Math.floor(rule.baselineThreshold * 12 / baselineCPU)} pages`);
+			console.log(`       24 cores  → ${Math.floor(rule.baselineThreshold * 24 / baselineCPU)} pages (baseline)`);
+			console.log(`       48 cores  → ${Math.floor(rule.baselineThreshold * 48 / baselineCPU)} pages`);
+		}
 	});
 
 	return rules;
@@ -460,8 +556,11 @@ async function main() {
 		// Analizza per complessità
 		const complexityAnalysis = analyzeByComplexity();
 
+		// Analizza per CPU cores
+		const cpuAnalysis = analyzeByCPUCores();
+
 		// Genera regole
-		const rules = generateDecisionRules(sizeAnalysis);
+		const rules = generateDecisionRules(sizeAnalysis, cpuAnalysis);
 
 		// Genera codice
 		const code = generateCode(rules, sizeAnalysis);
