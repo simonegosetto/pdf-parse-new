@@ -12,3 +12,7 @@ module.exports.aggressive = PdfAggressive;
 module.exports.processes = PdfProcesses;
 module.exports.workers = PDFWorkers;
 module.exports.SmartPDFParser = SmartPDFParser;
+
+// ES6/TypeScript compatibility
+module.exports.default = Pdf;
+

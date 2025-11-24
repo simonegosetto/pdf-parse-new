@@ -112,96 +112,110 @@ declare namespace PdfParse {
 
 	const DEFAULT_OPTIONS: Options;
 
+	/**
+	 * Parse PDF with streaming/chunking approach for large files
+	 * Reduces memory pressure by processing in chunks
+	 * Best for 500-1000 page PDFs
+	 * @param dataBuffer - PDF file buffer
+	 * @param options - Streaming options
+	 * @returns Promise with parsed PDF data
+	 */
+	function stream(dataBuffer: Buffer, options?: StreamOptions): Promise<Result>;
 
+	/**
+	 * Parse PDF with aggressive parallelization for maximum speed
+	 * Best for very large PDFs (1000+ pages)
+	 * All batches within a chunk run in parallel (single-thread)
+	 * @param dataBuffer - PDF file buffer
+	 * @param options - Aggressive parsing options
+	 * @returns Promise with parsed PDF data
+	 */
+	function aggressive(dataBuffer: Buffer, options?: StreamOptions): Promise<Result>;
+
+	/**
+	 * Parse PDF using worker threads for true multi-core parallelism
+	 * May have compatibility issues with PDF.js in some environments
+	 * Best for very large PDFs (1000+ pages) on multi-core systems
+	 * @param dataBuffer - PDF file buffer
+	 * @param options - Worker threads options
+	 * @returns Promise with parsed PDF data
+	 */
+	function workers(dataBuffer: Buffer, options?: WorkersOptions): Promise<Result>;
+
+	/**
+	 * Parse PDF using child processes for true multi-core parallelism
+	 * Most reliable multi-threading option, works in all environments
+	 * Best for very large PDFs (1000+ pages) on multi-core systems
+	 * @param dataBuffer - PDF file buffer
+	 * @param options - Child processes options
+	 * @returns Promise with parsed PDF data
+	 */
+	function processes(dataBuffer: Buffer, options?: ProcessesOptions): Promise<Result>;
+
+	/**
+	 * Smart PDF Parser - Automatically selects optimal parsing method
+	 * based on PDF characteristics and system resources.
+	 *
+	 * Features:
+	 * - CPU-aware decision tree (adapts to available cores)
+	 * - Fast-path optimization (0.5ms overhead for tiny PDFs)
+	 * - LRU cache for repeated similar PDFs
+	 * - Common scenario matching (90%+ hit rate)
+	 * - Oversaturation for maximum CPU utilization
+	 *
+	 * @example
+	 * ```typescript
+	 * import * as PdfParse from 'pdf-parse-new';
+	 * const parser = new PdfParse.SmartPDFParser();
+	 * const result = await parser.parse(pdfBuffer);
+	 * console.log(`Parsed ${result.numpages} pages using ${result._meta.method}`);
+	 * ```
+	 */
+	class SmartPDFParser {
+		constructor(options?: SmartParserOptions);
+
+		/**
+		 * Parse PDF with automatic method selection
+		 * @param dataBuffer - PDF file buffer
+		 * @param userOptions - Optional parsing options to override defaults
+		 * @returns Promise with parsed PDF data including _meta with method and performance info
+		 */
+		parse(dataBuffer: Buffer, userOptions?: Options): Promise<Result>;
+
+		/**
+		 * Get parser statistics (in-memory for current session)
+		 * @returns Statistics object with parse counts, method usage, and optimization metrics
+		 */
+		getStats(): SmartParserStats;
+	}
 }
 
 /**
- * Main PDF parsing function
+ * Main PDF parsing function (v1.4.1 compatible)
  * @param dataBuffer - PDF file buffer
  * @param options - Parsing options
  * @returns Promise with parsed PDF data
  */
-declare function PdfParse(dataBuffer: Buffer, options?: PdfParse.Options): Promise<PdfParse.Result>;
+interface PdfParseFunction {
+	(dataBuffer: Buffer, options?: PdfParse.Options): Promise<PdfParse.Result>;
 
-/**
- * Parse PDF with streaming/chunking approach for large files
- * Reduces memory pressure by processing in chunks
- * Best for 500-1000 page PDFs
- * @param dataBuffer - PDF file buffer
- * @param options - Streaming options
- * @returns Promise with parsed PDF data
- */
-declare function stream(dataBuffer: Buffer, options?: PdfParse.StreamOptions): Promise<PdfParse.Result>;
+	// v2.0.0 new methods
+	stream: typeof PdfParse.stream;
+	aggressive: typeof PdfParse.aggressive;
+	workers: typeof PdfParse.workers;
+	processes: typeof PdfParse.processes;
+	SmartPDFParser: typeof PdfParse.SmartPDFParser;
 
-/**
- * Parse PDF with aggressive parallelization for maximum speed
- * Best for very large PDFs (1000+ pages)
- * All batches within a chunk run in parallel (single-thread)
- * @param dataBuffer - PDF file buffer
- * @param options - Aggressive parsing options
- * @returns Promise with parsed PDF data
- */
-declare function aggressive(dataBuffer: Buffer, options?: PdfParse.StreamOptions): Promise<PdfParse.Result>;
-
-/**
- * Parse PDF using worker threads for true multi-core parallelism
- * May have compatibility issues with PDF.js in some environments
- * Best for very large PDFs (1000+ pages) on multi-core systems
- * @param dataBuffer - PDF file buffer
- * @param options - Worker threads options
- * @returns Promise with parsed PDF data
- */
-declare function workers(dataBuffer: Buffer, options?: PdfParse.WorkersOptions): Promise<PdfParse.Result>;
-
-/**
- * Parse PDF using child processes for true multi-core parallelism
- * Most reliable multi-threading option, works in all environments
- * Best for very large PDFs (1000+ pages) on multi-core systems
- * @param dataBuffer - PDF file buffer
- * @param options - Child processes options
- * @returns Promise with parsed PDF data
- */
-declare function processes(dataBuffer: Buffer, options?: PdfParse.ProcessesOptions): Promise<PdfParse.Result>;
-
-/**
- * Smart PDF Parser - Automatically selects optimal parsing method
- * based on PDF characteristics and system resources.
- *
- * Features:
- * - CPU-aware decision tree (adapts to available cores)
- * - Fast-path optimization (0.5ms overhead for tiny PDFs)
- * - LRU cache for repeated similar PDFs
- * - Common scenario matching (90%+ hit rate)
- * - Oversaturation for maximum CPU utilization
- *
- * @example
- * ```typescript
- * const SmartParser = require('pdf-parse-new/lib/SmartPDFParser');
- * const parser = new SmartParser();
- * const result = await parser.parse(pdfBuffer);
- * console.log(`Parsed ${result.numpages} pages using ${result._meta.method}`);
- * ```
- */
-declare class SmartPDFParser {
-	constructor(options?: PdfParse.SmartParserOptions);
-
-	/**
-	 * Parse PDF with automatic method selection
-	 * @param dataBuffer - PDF file buffer
-	 * @param userOptions - Optional parsing options to override defaults
-	 * @returns Promise with parsed PDF data including _meta with method and performance info
-	 */
-	parse(dataBuffer: Buffer, userOptions?: PdfParse.Options): Promise<PdfParse.Result>;
-
-	/**
-	 * Get parser statistics (in-memory for current session)
-	 * @returns Statistics object with parse counts, method usage, and optimization metrics
-	 */
-	getStats(): PdfParse.SmartParserStats;
+	// Re-export types
+	Result: PdfParse.Result;
+	Options: PdfParse.Options;
+	SmartParserOptions: PdfParse.SmartParserOptions;
+	SmartParserStats: PdfParse.SmartParserStats;
+	StreamOptions: PdfParse.StreamOptions;
+	WorkersOptions: PdfParse.WorkersOptions;
+	ProcessesOptions: PdfParse.ProcessesOptions;
 }
 
-declare namespace PdfParse {
-	export { stream, aggressive, workers, processes, SmartPDFParser };
-}
+declare const pdfParse: PdfParseFunction;
 
-export = PdfParse;
+export = pdfParse;

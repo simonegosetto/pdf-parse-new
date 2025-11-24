@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/npm/l/pdf-parse-new.svg?style=flat-square)](LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/pdf-parse-new.svg?style=flat-square)](https://www.npmjs.com/package/pdf-parse-new)
 
-**Version 2.0.0-beta.1** - Beta release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 9,417 real-world benchmarks.
+**Version 2.0.0** - Release with SmartPDFParser, multi-core processing, and AI-powered method selection based on 15,000+ real-world benchmarks.
 
 ---
 
@@ -382,6 +382,134 @@ Parse PDF with automatic method selection.
 #### getStats()
 
 Get parsing statistics for current session.
+
+---
+
+## TypeScript and NestJS Support
+
+This library includes full TypeScript definitions and works seamlessly with NestJS.
+
+### ⚠️ Important: Correct TypeScript Import
+
+```typescript
+// ✅ CORRECT: Use namespace import
+import * as PdfParse from 'pdf-parse-new';
+
+// Create parser instance
+const parser = new PdfParse.SmartPDFParser({
+  oversaturationFactor: 2.0,
+  enableFastPath: true
+});
+
+// Parse PDF
+const result = await parser.parse(pdfBuffer);
+console.log(`Parsed ${result.numpages} pages using ${result._meta.method}`);
+```
+
+```typescript
+// ❌ WRONG: This will NOT work
+import PdfParse from 'pdf-parse-new'; // Error: SmartPDFParser is not a constructor
+import { SmartPDFParser } from 'pdf-parse-new'; // Error: No named export
+```
+
+### NestJS Service Example
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import * as PdfParse from 'pdf-parse-new';
+import * as fs from 'fs';
+
+@Injectable()
+export class PdfService {
+  private parser: PdfParse.SmartPDFParser;
+
+  constructor() {
+    // Initialize parser with custom options
+    this.parser = new PdfParse.SmartPDFParser({
+      oversaturationFactor: 2.0,
+      enableFastPath: true,
+      enableCache: true,
+      maxWorkerLimit: 50
+    });
+  }
+
+  async parsePdf(filePath: string): Promise<string> {
+    const dataBuffer = fs.readFileSync(filePath);
+    const result = await this.parser.parse(dataBuffer);
+
+    console.log(`Pages: ${result.numpages}`);
+    console.log(`Method: ${result._meta?.method}`);
+    console.log(`Duration: ${result._meta?.duration?.toFixed(2)}ms`);
+
+    return result.text;
+  }
+
+  getParserStats() {
+    return this.parser.getStats();
+  }
+}
+```
+
+### NestJS Controller with File Upload
+
+```typescript
+import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as PdfParse from 'pdf-parse-new';
+
+@Controller('pdf')
+export class PdfController {
+  private parser = new PdfParse.SmartPDFParser({ oversaturationFactor: 2.0 });
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadPdf(@UploadedFile() file: Express.Multer.File) {
+    const result = await this.parser.parse(file.buffer);
+
+    return {
+      pages: result.numpages,
+      text: result.text,
+      metadata: result.info,
+      parsingInfo: {
+        method: result._meta?.method,
+        duration: result._meta?.duration,
+        fastPath: result._meta?.fastPath || false
+      }
+    };
+  }
+}
+```
+
+### Alternative Import Methods
+
+```typescript
+// Method 1: Namespace import (recommended)
+import * as PdfParse from 'pdf-parse-new';
+const parser = new PdfParse.SmartPDFParser();
+
+// Method 2: CommonJS require
+const PdfParse = require('pdf-parse-new');
+const parser = new PdfParse.SmartPDFParser();
+
+// Method 3: Direct module import
+import SmartPDFParser = require('pdf-parse-new/lib/SmartPDFParser');
+const parser = new SmartPDFParser();
+```
+
+### TypeScript Type Definitions
+
+All types are fully documented and available:
+
+```typescript
+import * as PdfParse from 'pdf-parse-new';
+
+// Use types from the namespace
+type Result = PdfParse.Result;
+type Options = PdfParse.Options;
+type SmartParserOptions = PdfParse.SmartParserOptions;
+```
+
+📖 **For more detailed examples and troubleshooting**, see [NESTJS_USAGE.md](NESTJS_USAGE.md)
 
 ---
 
