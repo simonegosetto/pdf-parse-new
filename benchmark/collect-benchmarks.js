@@ -177,45 +177,41 @@ async function runBenchmarks() {
 
 	const allResults = [];
 	const outputFile = './smart-parser-benchmarks.json';
+	const totalFiles = testFiles.length;
+	let processedFiles = 0;
+	let skippedFiles = 0;
+
+	console.log(`📊 Total files to process: ${totalFiles}\n`);
 
 	for (const file of testFiles.reverse()) {
 		if (!isURL(file) && !fs.existsSync(file)) {
+			skippedFiles++;
 			console.log(`\n⏭️  Skipping ${file} (not found)`);
+			console.log(`   Progress: ${processedFiles}/${totalFiles} processed, ${skippedFiles} skipped\n`);
 			continue;
 		}
 
 		try {
 			const results = await benchmarkAllMethods(file);
 			allResults.push(...results);
+			processedFiles++;
 
 			// Save in smart parser format incrementally (only format needed)
 			const converted = convertToSmartParserFormatData(allResults);
 			fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
 
+			const percentComplete = ((processedFiles / totalFiles) * 100).toFixed(1);
+			console.log()
 			console.log(`💾 Progress saved (${allResults.length} results so far)`);
+			console.log(`📈 Files: ${processedFiles}/${totalFiles} (${percentComplete}%) - ${totalFiles - processedFiles} remaining`);
 		} catch (error) {
+			processedFiles++;
 			console.error(`\n❌ Fatal error processing ${file}:`);
 			console.error(`   ${error.message}`);
 			console.log(`   Continuing with next file...\n`);
 
-			// Log the failed file
-			allResults.push({
-				file: isURL(file) ? new URL(file).pathname.split('/').pop() : file.split(/[/\\]/).pop(),
-				pages: 0,
-				size: 0,
-				method: 'N/A',
-				config: {},
-				duration: 0,
-				success: false,
-				error: `Fatal error: ${error.message}`,
-				timestamp: Date.now()
-			});
-
-			// Save even failed attempts
-			const converted = convertToSmartParserFormatData(allResults);
-			fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
-
-			console.log(`💾 Progress saved (${allResults.length} results so far)`);
+			const percentComplete = ((processedFiles / totalFiles) * 100).toFixed(1);
+			console.log(`📈 Files: ${processedFiles}/${totalFiles} (${percentComplete}%) - ${totalFiles - processedFiles} remaining`);
 		}
 
 		// Small delay between files
@@ -226,8 +222,15 @@ async function runBenchmarks() {
 	const converted = convertToSmartParserFormatData(allResults);
 	fs.writeFileSync(outputFile, JSON.stringify(converted, null, 2));
 
-	console.log(`\n\n✅ Collected ${allResults.length} benchmarks`);
-	console.log(`📊 Results saved to: ${outputFile}`);
+	console.log(`\n\n${'='.repeat(80)}`);
+	console.log('✅ BENCHMARK COLLECTION COMPLETED');
+	console.log('='.repeat(80));
+	console.log(`📊 Total files: ${totalFiles}`);
+	console.log(`✓  Processed: ${processedFiles}`);
+	console.log(`⏭️  Skipped: ${skippedFiles}`);
+	console.log(`📈 Total benchmarks: ${allResults.length}`);
+	console.log(`💾 Results saved to: ${outputFile}`);
+	console.log('='.repeat(80));
 
 	// Analyze results
 	analyzeResults(allResults);
