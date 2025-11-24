@@ -16,7 +16,21 @@ export interface Result {
 }
 
 export interface Options {
+	/**
+	 * Custom page render function (for single-thread parsers)
+	 * @param pageData - PDF.js page object
+	 * @returns Extracted text from the page
+	 */
 	pagerender?: ((pageData: any) => string | Promise<string>) | undefined;
+
+	/**
+	 * Path to external module exporting custom render function
+	 * Used by workers/processes to load custom render logic without eval()
+	 * Module must export: module.exports = function(pageData) { ... }
+	 * @example './my-custom-render.js'
+	 */
+	pagerenderModule?: string | undefined;
+
 	max?: number | undefined;
 	verbosityLevel?: 0 | 1 | 5 | undefined;
 	parallelizePages?: boolean | undefined;
