@@ -1,0 +1,133 @@
+{
+  "version": "2.0.0",
+  "generatedAt": "2025-11-24T14:53:27.247Z",
+  "benchmarkSamples": 17934,
+  "baselineCPU": 24,
+  "rules": [
+    {
+      "name": "tiny",
+      "condition": {
+        "type": "pages",
+        "operator": "<=",
+        "value": 10
+      },
+      "method": "batch",
+      "config": {
+        "parallelizePages": true,
+        "batchSize": 5
+      },
+      "parser": "PDF",
+      "stats": {
+        "median": 11.48,
+        "samples": 6288
+      }
+    },
+    {
+      "name": "small",
+      "condition": {
+        "type": "pages",
+        "operator": "range",
+        "min": 10,
+        "max": 50
+      },
+      "method": "batch",
+      "config": {
+        "parallelizePages": true,
+        "batchSize": 10
+      },
+      "parser": "PDF",
+      "stats": {
+        "median": 103.99,
+        "samples": 1755
+      }
+    },
+    {
+      "name": "medium",
+      "condition": {
+        "type": "pages",
+        "operator": "range",
+        "min": 50,
+        "max": 200
+      },
+      "method": "stream",
+      "config": {
+        "chunkSize": 200,
+        "batchSize": 10
+      },
+      "parser": "PDFStream",
+      "stats": {
+        "median": 256.94,
+        "samples": 5464
+      }
+    },
+    {
+      "name": "large",
+      "condition": {
+        "type": "pages",
+        "operator": "range",
+        "min": 200,
+        "max": 500
+      },
+      "method": "stream",
+      "config": {
+        "chunkSize": 200,
+        "batchSize": 10
+      },
+      "parser": "PDFStream",
+      "stats": {
+        "median": 1080.75,
+        "samples": 1880
+      }
+    },
+    {
+      "name": "xlarge",
+      "condition": {
+        "type": "pages",
+        "operator": "range",
+        "min": 500,
+        "max": 1000
+      },
+      "method": "processes",
+      "config": {
+        "chunkSize": 500,
+        "batchSize": 10,
+        "maxProcesses": "calculateOptimalWorkers"
+      },
+      "parser": "PDFProcesses",
+      "stats": {
+        "median": 1913.75,
+        "samples": 106
+      }
+    },
+    {
+      "name": "huge",
+      "condition": {
+        "type": "pages",
+        "operator": ">",
+        "value": "cpuNormalizedThreshold(1000)",
+        "cpuNormalized": true,
+        "baselineThreshold": 1000
+      },
+      "method": "processes",
+      "config": {
+        "chunkSize": 500,
+        "batchSize": 10,
+        "maxProcesses": "calculateOptimalWorkers"
+      },
+      "parser": "PDFProcesses",
+      "stats": {
+        "median": 4089.6,
+        "samples": 2441,
+        "notes": "CPU-normalized: threshold adapts to available cores"
+      }
+    }
+  ],
+  "fallback": {
+    "method": "batch",
+    "config": {
+      "parallelizePages": true,
+      "batchSize": 50
+    },
+    "parser": "PDF"
+  }
+}
