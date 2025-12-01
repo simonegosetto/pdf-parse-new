@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "generatedAt": "2025-11-23T21:53:41.283Z",
-  "benchmarkSamples": 15526,
+  "generatedAt": "2025-11-24T14:53:27.247Z",
+  "benchmarkSamples": 17934,
   "baselineCPU": 24,
   "rules": [
     {
@@ -18,8 +18,8 @@
       },
       "parser": "PDF",
       "stats": {
-        "median": 10.66,
-        "samples": 4887
+        "median": 11.48,
+        "samples": 6288
       }
     },
     {
@@ -37,8 +37,8 @@
       },
       "parser": "PDF",
       "stats": {
-        "median": 103.87,
-        "samples": 1602
+        "median": 103.99,
+        "samples": 1755
       }
     },
     {
@@ -56,8 +56,8 @@
       },
       "parser": "PDFStream",
       "stats": {
-        "median": 262.02,
-        "samples": 4904
+        "median": 256.94,
+        "samples": 5464
       }
     },
     {
@@ -68,15 +68,15 @@
         "min": 200,
         "max": 500
       },
-      "method": "batch",
+      "method": "stream",
       "config": {
-        "parallelizePages": true,
-        "batchSize": 50
+        "chunkSize": 200,
+        "batchSize": 10
       },
-      "parser": "PDF",
+      "parser": "PDFStream",
       "stats": {
-        "median": 1007.83,
-        "samples": 1768
+        "median": 1080.75,
+        "samples": 1880
       }
     },
     {
@@ -95,8 +95,8 @@
       },
       "parser": "PDFProcesses",
       "stats": {
-        "median": 1907.46,
-        "samples": 90
+        "median": 1913.75,
+        "samples": 106
       }
     },
     {
@@ -116,8 +116,8 @@
       },
       "parser": "PDFProcesses",
       "stats": {
-        "median": 4016.89,
-        "samples": 2275,
+        "median": 4089.6,
+        "samples": 2441,
         "notes": "CPU-normalized: threshold adapts to available cores"
       }
     }
