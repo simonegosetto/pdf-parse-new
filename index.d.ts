@@ -35,6 +35,12 @@ export interface Options {
 	verbosityLevel?: 0 | 1 | 5 | undefined;
 	parallelizePages?: boolean | undefined;
 	batchSize?: number | undefined;
+
+	/**
+	 * Password for encrypted PDFs. Forwarded as-is to PDF.js `getDocument({ password })`.
+	 * Ignored when the document is not encrypted.
+	 */
+	password?: string | undefined;
 }
 
 export interface SmartParserOptions {
@@ -200,6 +206,71 @@ export class SmartPDFParser {
 	 */
 	getStats(): SmartParserStats;
 }
+
+export interface FontStats {
+	/** Most common font size across the sampled pages (body text). */
+	bodySize: number;
+	/** Threshold (>=) above which a line is treated as `# h1`. */
+	h1Size: number;
+	/** Threshold (>=) above which a line is treated as `## h2`. */
+	h2Size: number;
+	/** Threshold (>=) above which a line is treated as `### h3`. */
+	h3Size: number;
+	/** Median vertical distance between consecutive lines of body text. */
+	lineHeight: number;
+}
+
+export interface MarkdownOptions extends Options {
+	/** Number of pages to sample for font statistics (default: 5). */
+	sampleSize?: number;
+	/** Wrap items in `**...**` / `*...*` based on font name (default: true). */
+	detectEmphasis?: boolean;
+	/** Convert leading bullets and numbered prefixes to Markdown lists (default: true). */
+	detectLists?: boolean;
+	/** Wrap monospace runs in fenced code blocks (default: true). */
+	detectCodeBlocks?: boolean;
+}
+
+/**
+ * Parse a PDF and emit Markdown instead of plain text.
+ *
+ * Performs a two-pass analysis: first samples a few pages to build a font-size
+ * histogram (used to infer headings), then parses the document with a renderer
+ * that emits headings, lists, inline emphasis and (optionally) fenced code
+ * blocks. Heuristic-based — works well on text-heavy PDFs, struggles with
+ * tables and complex multi-column layouts (use a vision model for those).
+ *
+ * @param dataBuffer - PDF file buffer
+ * @param options - Markdown rendering options
+ * @returns Promise with `result.text` containing Markdown
+ */
+export function markdown(dataBuffer: Buffer, options?: MarkdownOptions): Promise<Result>;
+
+/**
+ * Drop-in `pagerender` that emits Markdown using only per-page statistics.
+ * Lower quality than `markdown(buffer)` (no document-wide font stats) but
+ * works in single-call contexts and as a `pagerenderModule` for workers.
+ */
+export function markdownRender(pageData: any): Promise<string>;
+
+/**
+ * Build a Markdown `pagerender` bound to pre-computed font statistics.
+ * Useful when calling `pdf(buffer, { pagerender: createMarkdownRenderer(stats) })`
+ * in a custom flow.
+ */
+export function createMarkdownRenderer(stats: FontStats, options?: MarkdownOptions): (pageData: any) => Promise<string>;
+
+/**
+ * Sample the PDF and compute font-size statistics used to drive Markdown
+ * heading detection. Cheap: defaults to 5 evenly-distributed pages.
+ */
+export function collectFontStats(dataBuffer: Buffer, options?: { sampleSize?: number; verbosityLevel?: number; password?: string }): Promise<FontStats>;
+
+/**
+ * Absolute path to the standalone Markdown renderer module, suitable for
+ * passing as `pagerenderModule` to `workers()` / `processes()`.
+ */
+export const markdownRenderModule: string;
 
 /**
  * Funzione principale di parsing (retrocompatibile)
