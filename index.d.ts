@@ -35,6 +35,12 @@ export interface Options {
 	verbosityLevel?: 0 | 1 | 5 | undefined;
 	parallelizePages?: boolean | undefined;
 	batchSize?: number | undefined;
+
+	/**
+	 * Password for encrypted PDFs. Forwarded as-is to PDF.js `getDocument({ password })`.
+	 * Ignored when the document is not encrypted.
+	 */
+	password?: string | undefined;
 }
 
 export interface SmartParserOptions {
